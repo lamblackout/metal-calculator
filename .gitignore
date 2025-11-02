@@ -1,0 +1,8 @@
+node_modules/
+.DS_Store
+*.log
+.env
+.vscode/
+.idea/
+Калькулятор_компактный_tsx.tsx
+*.tsx

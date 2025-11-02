@@ -1,0 +1,13 @@
+{
+  "name": "metal-calculator",
+  "version": "1.0.0",
+  "description": "Калькулятор металлопроката для n8n на Railway",
+  "main": "dist/calculator.bundle.js",
+  "scripts": {
+    "build": "node build.js",
+    "test": "node test.js"
+  },
+  "author": "23met",
+  "license": "UNLICENSED",
+  "private": true
+}
