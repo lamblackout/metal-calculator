@@ -18,14 +18,8 @@ const calculatorClean = calculatorCode
   .replace(/const\s+formulas\s*=\s*require\([^)]+\);?\s*/m, '')
   .replace(/module\.exports\s*=\s*\{[^}]+\};?\s*$/m, '');
 
-// Создаем bundle
-const bundle = `// ==========================================
-// Metal Calculator Bundle для n8n
-// Версия: 1.0.0
-// Собрано: ${new Date().toISOString()}
-// ==========================================
-
-${formulasClean}
+// Общая часть кода (используется в обеих версиях)
+const coreCode = `${formulasClean}
 
 // ============ СОЗДАЕМ ОБЪЕКТ FORMULAS ============
 const formulas = {
@@ -40,7 +34,16 @@ const formulas = {
   STEEL_DENSITY
 };
 
-${calculatorClean}
+${calculatorClean}`;
+
+// ============ NODE.JS VERSION ============
+const nodeBundle = `// ==========================================
+// Metal Calculator Bundle для Node.js
+// Версия: 1.0.0
+// Собрано: ${new Date().toISOString()}
+// ==========================================
+
+${coreCode}
 
 // ============ ЭКСПОРТ ============
 module.exports = {
@@ -48,20 +51,51 @@ module.exports = {
 };
 `;
 
-// Сохраняем
-fs.mkdirSync('dist', { recursive: true });
-fs.writeFileSync(path.join(__dirname, 'dist/calculator.bundle.js'), bundle);
+// ============ BROWSER VERSION (IIFE) ============
+const browserBundle = `// ==========================================
+// Metal Calculator Bundle для Browser
+// Версия: 1.0.0
+// Собрано: ${new Date().toISOString()}
+// ==========================================
 
-console.log('✅ Bundle создан: dist/calculator.bundle.js');
-console.log(`📦 Размер: ${(bundle.length / 1024).toFixed(2)} KB`);
+(function(window) {
+  'use strict';
+
+${coreCode}
+
+  // ============ ЭКСПОРТ В WINDOW ============
+  window.MetalCalculator = {
+    calculateMetal: calculateMetal
+  };
+
+})(window);
+`;
+
+// Создаем директории
+fs.mkdirSync('dist', { recursive: true });
+fs.mkdirSync('docs/dist', { recursive: true });
+
+// Сохраняем Node.js версию
+fs.writeFileSync(path.join(__dirname, 'dist/calculator.bundle.js'), nodeBundle);
+console.log('✅ Node.js bundle создан: dist/calculator.bundle.js');
+console.log(`   📦 Размер: ${(nodeBundle.length / 1024).toFixed(2)} KB`);
+
+// Сохраняем Browser версию
+fs.writeFileSync(path.join(__dirname, 'dist/calculator.browser.js'), browserBundle);
+console.log('✅ Browser bundle создан: dist/calculator.browser.js');
+console.log(`   📦 Размер: ${(browserBundle.length / 1024).toFixed(2)} KB`);
+
+// Копируем browser версию в docs/dist/
+fs.writeFileSync(path.join(__dirname, 'docs/dist/calculator.browser.js'), browserBundle);
+console.log('✅ Browser bundle скопирован: docs/dist/calculator.browser.js');
 console.log('');
 
-// Быстрый тест
+// Быстрый тест Node.js версии
 try {
   const { calculateMetal } = require('./dist/calculator.bundle');
-  console.log('✅ Bundle валиден, экспорт работает');
+  console.log('✅ Node.js bundle валиден, экспорт работает');
   console.log(`   Тип calculateMetal: ${typeof calculateMetal}`);
 } catch (error) {
-  console.error('❌ Ошибка в bundle:', error.message);
+  console.error('❌ Ошибка в Node.js bundle:', error.message);
   process.exit(1);
 }

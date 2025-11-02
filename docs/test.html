@@ -246,17 +246,15 @@
     // Загрузка калькулятора
     async function loadCalculator() {
       try {
-        const response = await fetch('dist/calculator.bundle.js');
+        const response = await fetch('dist/calculator.browser.js');
         if (!response.ok) throw new Error('Ошибка загрузки');
 
         const calcCode = await response.text();
         const size = new Blob([calcCode]).size;
 
-        // Выполнение кода
+        // Выполнение кода (IIFE создает window.MetalCalculator)
         eval(calcCode);
-        calculateMetal = typeof module !== 'undefined' && module.exports
-          ? module.exports.calculateMetal
-          : window.calculateMetal;
+        calculateMetal = window.MetalCalculator.calculateMetal;
 
         if (!calculateMetal) throw new Error('Функция calculateMetal не найдена');
 
@@ -271,7 +269,7 @@
             </div>
             <div class="info-card">
               <div class="label">Функция</div>
-              <div class="value">calculateMetal</div>
+              <div class="value">MetalCalculator.calculateMetal</div>
             </div>
             <div class="info-card">
               <div class="label">Тип</div>

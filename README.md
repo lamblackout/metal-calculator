@@ -114,21 +114,35 @@ metal-calculator/
 - Неизвестная формула расчета
 - Отсутствуют входные параметры
 
-### 4. Bundle (dist/calculator.bundle.js)
+### 4. Bundle (два варианта)
 
-**Характеристики:**
+**Для Node.js (n8n):**
+- Файл: `dist/calculator.bundle.js`
 - Размер: ~14 KB
-- Формат: CommonJS module
-- Готов к использованию в n8n
-- Содержит все формулы и логику расчета
-- Не требует дополнительных зависимостей
+- Формат: CommonJS (module.exports)
+- Использование: `const { calculateMetal } = require('./calculator.bundle.js')`
+- Применение: n8n Code Node, Node.js скрипты
+
+**Для браузера (test.html):**
+- Файл: `dist/calculator.browser.js`
+- Размер: ~14 KB
+- Формат: IIFE (window.MetalCalculator)
+- Использование: `window.MetalCalculator.calculateMetal(...)`
+- Применение: HTML страницы, браузерные приложения
 
 **Сборка:**
 ```bash
-node build.js
+node build.js  # Создает обе версии автоматически
 ```
 
+Скрипт build.js создает оба файла одновременно:
+- `dist/calculator.bundle.js` - для Node.js
+- `dist/calculator.browser.js` - для браузера
+- `docs/dist/calculator.browser.js` - копия для GitHub Pages
+
 ## Использование в n8n
+
+**Важно:** Для n8n используйте **calculator.bundle.js** (Node.js версия с module.exports).
 
 ### Метод 1: Загрузка из GitHub Pages (рекомендуется)
 
@@ -201,7 +215,8 @@ return result;
 После публикации на GitHub Pages доступны следующие endpoints:
 
 - **База данных:** `https://YOUR-USERNAME.github.io/metal-calculator/database/metals.json`
-- **Bundle:** `https://YOUR-USERNAME.github.io/metal-calculator/dist/calculator.bundle.js`
+- **Bundle для Node.js (n8n):** `https://YOUR-USERNAME.github.io/metal-calculator/dist/calculator.bundle.js`
+- **Bundle для браузера:** `https://YOUR-USERNAME.github.io/metal-calculator/dist/calculator.browser.js`
 - **Документация:** `https://YOUR-USERNAME.github.io/metal-calculator/`
 - **Тестирование:** `https://YOUR-USERNAME.github.io/metal-calculator/test.html`
 
@@ -308,6 +323,50 @@ const result = calculateMetal({
 //   metalType: "unknown_metal"
 // }
 ```
+
+### Пример 6: Использование в браузере
+
+Для использования в HTML-страницах используйте **calculator.browser.js** (IIFE версия):
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Metal Calculator Test</title>
+  <script src="https://YOUR-USERNAME.github.io/metal-calculator/dist/calculator.browser.js"></script>
+</head>
+<body>
+  <h1>Metal Calculator</h1>
+
+  <script>
+    // Загрузка базы данных
+    fetch('https://YOUR-USERNAME.github.io/metal-calculator/database/metals.json')
+      .then(response => response.json())
+      .then(metalDatabase => {
+
+        // Использование window.MetalCalculator.calculateMetal
+        const result = window.MetalCalculator.calculateMetal({
+          metalType: 'armature_a3',
+          size: 12,
+          weight: 100
+        }, metalDatabase);
+
+        console.log(result);
+        // {
+        //   success: true,
+        //   metalType: "Арматура А3",
+        //   weightPerMeter: 0.888,
+        //   weight: 100,
+        //   length: 112.64,
+        //   pieces: 10
+        // }
+      });
+  </script>
+</body>
+</html>
+```
+
+**Важно:** В браузере используйте `window.MetalCalculator.calculateMetal()`, а не просто `calculateMetal()`.
 
 ## Разработка
 

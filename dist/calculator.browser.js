@@ -1,8 +1,11 @@
 // ==========================================
-// Metal Calculator Bundle для Node.js
+// Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-02T15:34:53.100Z
+// Собрано: 2025-11-02T15:34:53.101Z
 // ==========================================
+
+(function(window) {
+  'use strict';
 
 // src/formulas.js
 // Формулы расчета металлопроката
@@ -376,7 +379,9 @@ function roundTo(value, decimals) {
 
 
 
-// ============ ЭКСПОРТ ============
-module.exports = {
-  calculateMetal
-};
+  // ============ ЭКСПОРТ В WINDOW ============
+  window.MetalCalculator = {
+    calculateMetal: calculateMetal
+  };
+
+})(window);
