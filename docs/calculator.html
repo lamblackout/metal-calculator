@@ -138,7 +138,7 @@
   </div>
 
   <!-- Загрузка калькулятора -->
-  <script src="https://iamblackout.github.io/metal-calculator/dist/calculator.browser.js"></script>
+  <script src="./dist/calculator.browser.js"></script>
 
   <script>
     // Глобальные переменные
@@ -148,7 +148,7 @@
     // Загрузка базы данных при загрузке страницы
     async function loadDatabase() {
       try {
-        const response = await fetch('https://iamblackout.github.io/metal-calculator/database/metals.json');
+        const response = await fetch('./database/metals.json');
         if (!response.ok) throw new Error('Не удалось загрузить базу данных');
         metalDatabase = await response.json();
         console.log('✅ База данных загружена');
