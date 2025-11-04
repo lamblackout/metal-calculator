@@ -55,6 +55,20 @@ function calculateSheetWeight(width, length, thickness) {
 }
 
 /**
+ * Расчет веса полосы
+ * Формула: ширина × толщина × ρ × длина / 1000000
+ * @param {number} width - Ширина в мм
+ * @param {number} thickness - Толщина в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculateStripWeight(width, thickness, length) {
+  // Вес 1м = ширина × толщина × плотность / 1000000
+  const weightPerMeter = width * thickness * STEEL_DENSITY / 1000000;
+  return weightPerMeter * length;
+}
+
+/**
  * Расчет веса трубы
  * @param {number} outerDiameter - Наружный диаметр в мм
  * @param {number} wallThickness - Толщина стенки в мм
@@ -71,6 +85,92 @@ function calculatePipeWeight(outerDiameter, wallThickness, length) {
   const crossSectionArea = outerArea - innerArea;
 
   return crossSectionArea * length * STEEL_DENSITY;
+}
+
+/**
+ * Расчет веса ПНД трубы (пластик)
+ * @param {number} outerDiameter - Наружный диаметр в мм
+ * @param {number} wallThickness - Толщина стенки в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculatePNDPipeWeight(outerDiameter, wallThickness, length) {
+  const PND_DENSITY = 950; // кг/м³ для ПНД
+  const outerRadiusInMeters = (outerDiameter / 2) / 1000;
+  const innerDiameter = outerDiameter - (2 * wallThickness);
+  const innerRadiusInMeters = (innerDiameter / 2) / 1000;
+
+  const outerArea = Math.PI * Math.pow(outerRadiusInMeters, 2);
+  const innerArea = Math.PI * Math.pow(innerRadiusInMeters, 2);
+  const crossSectionArea = outerArea - innerArea;
+
+  return crossSectionArea * length * PND_DENSITY;
+}
+
+/**
+ * Расчет веса квадратной трубы
+ * Формула: ρ × 0.0157 × S × (2×A - 2.86×S) × L
+ * @param {number} side - Сторона квадрата в мм
+ * @param {number} wallThickness - Толщина стенки в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculateSquarePipeWeight(side, wallThickness, length) {
+  // Формула из ГОСТа для квадратных труб
+  const weightPerMeter = STEEL_DENSITY / 1000 * 0.0157 * wallThickness * (2 * side - 2.86 * wallThickness);
+  return weightPerMeter * length;
+}
+
+/**
+ * Расчет веса овальной трубы
+ * Используем упрощенную формулу через периметр
+ * @param {number} width - Ширина в мм
+ * @param {number} height - Высота в мм
+ * @param {number} wallThickness - Толщина стенки в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculateOvalPipeWeight(width, height, wallThickness, length) {
+  // Приближенный периметр овала: π × (3×(a+b) - √((3a+b)×(a+3b)))
+  // Упрощенная формула Рамануджана
+  const a = width / 2;
+  const b = height / 2;
+  const perimeter = Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+
+  // Вес = ρ × S × (P - 4×S) × L / 1000000
+  const weightPerMeter = STEEL_DENSITY * wallThickness * (perimeter - 4 * wallThickness) / 1000000;
+  return weightPerMeter * length;
+}
+
+/**
+ * Расчет веса прямоугольной трубы
+ * Формула: ρ × S × (perimeter - 4×S) × L / 1000000
+ * @param {number} width - Ширина в мм
+ * @param {number} height - Высота в мм
+ * @param {number} wallThickness - Толщина стенки в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculateRectangularPipeWeight(width, height, wallThickness, length) {
+  const perimeter = 2 * (width + height);
+  // Вес = ρ × S × (P - 4×S) × L / 1000000
+  const weightPerMeter = STEEL_DENSITY * wallThickness * (perimeter - 4 * wallThickness) / 1000000;
+  return weightPerMeter * length;
+}
+
+/**
+ * Расчет веса уголка (равнополочного и неравнополочного)
+ * Формула: ρ × толщина × (ширина1 + ширина2 - толщина) × L / 1000000
+ * @param {number} side1 - Ширина первой полки в мм
+ * @param {number} side2 - Ширина второй полки в мм
+ * @param {number} thickness - Толщина в мм
+ * @param {number} length - Длина в метрах
+ * @returns {number} Вес в кг
+ */
+function calculateAngleWeight(side1, side2, thickness, length) {
+  // Формула ГОСТ для уголков
+  const weightPerMeter = STEEL_DENSITY * thickness * (side1 + side2 - thickness) / 1000000;
+  return weightPerMeter * length;
 }
 
 /**
@@ -114,7 +214,13 @@ module.exports = {
   calculateSquareWeight,
   calculateRectangleWeight,
   calculateSheetWeight,
+  calculateStripWeight,
   calculatePipeWeight,
+  calculatePNDPipeWeight,
+  calculateSquarePipeWeight,
+  calculateOvalPipeWeight,
+  calculateRectangularPipeWeight,
+  calculateAngleWeight,
   addGalvanization,
   calculateLengthFromWeight,
   calculatePiecesFromLength,

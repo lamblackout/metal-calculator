@@ -63,15 +63,51 @@ function calculateMetal(params, metalDatabase) {
     }
 
     // Рассчитать вес 1 метра (базовый)
-    let weightPerMeter = calculateWeightPerMeter(metal, params.size);
+    let weightPerMeter = null;
+    let steelType = null;
 
-    if (weightPerMeter === null) {
-      return {
-        success: false,
-        error: `Размер '${params.size}' не найден для металла '${metal.name}'`,
-        metalType: params.metalType,
-        size: params.size
-      };
+    // ✅ СПЕЦИАЛЬНАЯ ЛОГИКА ДЛЯ КАТАНКИ (formula === 'katanka')
+    if (metal.formula === 'katanka') {
+      // Для катанки вес зависит от размера И марки стали
+      steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
+
+      const sizeCoef = metal.coefficients ? metal.coefficients[String(params.size)] : null;
+      const steelCoef = metal.steelCoefficients ? metal.steelCoefficients[steelType] : null;
+
+      if (!sizeCoef) {
+        return {
+          success: false,
+          error: `Размер '${params.size}' не найден для катанки`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!steelCoef) {
+        return {
+          success: false,
+          error: `Марка стали '${steelType}' не найдена в базе данных`,
+          metalType: params.metalType,
+          size: params.size,
+          steelType: steelType
+        };
+      }
+
+      // Вес 1 метра (в кг) = коэф_размера × коэф_стали
+      // Коэффициенты уже в т/м³, поэтому результат будет в кг/м
+      weightPerMeter = sizeCoef * steelCoef;
+    } else {
+      // Для всех остальных металлов используем стандартную логику
+      weightPerMeter = calculateWeightPerMeter(metal, params.size);
+
+      if (weightPerMeter === null) {
+        return {
+          success: false,
+          error: `Размер '${params.size}' не найден для металла '${metal.name}'`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
     }
 
     // Применить оцинковку если указано
@@ -127,12 +163,19 @@ function calculateMetal(params, metalDatabase) {
       size: params.size,
       gost: metal.gost || 'Не указан',
       category: metal.category || 'Не указана',
-      weightPerMeter: roundTo(weightPerMeter, 3),
+      // Для крепежа нужна высокая точность (вес очень мал)
+      weightPerMeter: roundTo(weightPerMeter, metal.category === 'Крепеж' ? 6 : 3),
       isGalvanized: isGalvanized
     };
 
+    // Для катанки добавить информацию о марке стали
+    if (metal.formula === 'katanka' && steelType) {
+      result.steelType = steelType;
+    }
+
     if (weight !== null) {
-      result.weight = roundTo(weight, 3);
+      // Для крепежа нужна высокая точность (малый вес)
+      result.weight = roundTo(weight, metal.category === 'Крепеж' ? 6 : 3);
     }
     if (length !== null) {
       result.length = roundTo(length, 2);
@@ -163,7 +206,7 @@ function calculateWeightPerMeter(metal, size) {
   const formula = metal.formula;
 
   // ✅ НОВАЯ ЛОГИКА: Для канатов с useKilograms - использовать таблицу весов напрямую
-  if (metal.useKilograms && metal.weights) {
+  if (metal.useKilograms && metal.weights && !metal.perThousand) {
     const weightValue = metal.weights[String(size)];
     if (weightValue !== undefined && weightValue !== null) {
       return weightValue;
@@ -172,14 +215,126 @@ function calculateWeightPerMeter(metal, size) {
     return null;
   }
 
-  // Для металлов с предрасчитанными весами (балка, швеллер, уголок и т.д.)
-  if (formula === 'beam' || formula === 'channel' || formula === 'angle' ||
-      formula === 'pipe' && metal.weights) {
+  // ✅ КРЕПЁЖ (metiz): Вес на 1000 штук
+  if (metal.formula === 'metiz' && metal.perThousand && metal.weights) {
+    const weightPer1000 = metal.weights[String(size)];
+    if (weightPer1000 !== undefined && weightPer1000 !== null) {
+      // Возвращаем вес одной штуки в кг
+      return weightPer1000 / 1000;
+    }
+    return null;
+  }
+
+  // Для металлов с предрасчитанными весами (балка, швеллер и т.д.)
+  if (formula === 'beam' || formula === 'channel' || (formula === 'pipe' && metal.weights)) {
     if (metal.weights && metal.weights[size] !== undefined) {
       return metal.weights[size];
     }
     // Если вес не найден в таблице, вернуть null
     return null;
+  }
+
+  // ✅ ТРУБЫ И УГОЛКИ: Размер - это массив
+  if (formula === 'pipe' || formula === 'pipe_pnd' || formula === 'pipe_square' ||
+      formula === 'pipe_oval' || formula === 'pipe_rect' || formula === 'angle') {
+
+    // Размер должен быть массивом
+    if (!Array.isArray(size)) {
+      return null;
+    }
+
+    // Проверить, что размер присутствует в списке доступных размеров
+    if (metal.sizes) {
+      let found = false;
+      for (const s of metal.sizes) {
+        if (Array.isArray(s) && s.length === size.length &&
+            s.every((val, idx) => val === size[idx])) {
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        return null;
+      }
+    }
+
+    // Обработать разные типы труб и уголков
+    switch (formula) {
+      case 'pipe':
+        // Круглая стальная труба: [diameter, thickness]
+        if (size.length !== 2) return null;
+        return formulas.calculatePipeWeight(size[0], size[1], 1);
+
+      case 'pipe_pnd':
+        // ПНД труба (пластик): [diameter, thickness]
+        if (size.length !== 2) return null;
+        return formulas.calculatePNDPipeWeight(size[0], size[1], 1);
+
+      case 'pipe_square':
+        // Квадратная труба: [side, side, thickness] или [side, thickness]
+        if (size.length === 3) {
+          return formulas.calculateSquarePipeWeight(size[0], size[2], 1);
+        } else if (size.length === 2) {
+          return formulas.calculateSquarePipeWeight(size[0], size[1], 1);
+        }
+        return null;
+
+      case 'pipe_oval':
+        // Овальная труба: [width, height, thickness]
+        if (size.length !== 3) return null;
+        return formulas.calculateOvalPipeWeight(size[0], size[1], size[2], 1);
+
+      case 'pipe_rect':
+        // Прямоугольная труба: [width, height, thickness]
+        if (size.length !== 3) return null;
+        return formulas.calculateRectangularPipeWeight(size[0], size[1], size[2], 1);
+
+      case 'angle':
+        // Уголок: [ширина1, ширина2, толщина]
+        if (size.length !== 3) return null;
+        return formulas.calculateAngleWeight(size[0], size[1], size[2], 1);
+
+      default:
+        return null;
+    }
+  }
+
+  // ✅ ЛИСТЫ И ПОЛОСЫ: Размер - это массив [ширина, толщина]
+  if (formula === 'sheet' || formula === 'strip') {
+    // Размер должен быть массивом
+    if (!Array.isArray(size)) {
+      return null;
+    }
+
+    // Должно быть ровно 2 элемента: [ширина, толщина]
+    if (size.length !== 2) {
+      return null;
+    }
+
+    const width = parseFloat(size[0]);
+    const thickness = parseFloat(size[1]);
+
+    if (isNaN(width) || isNaN(thickness)) {
+      return null;
+    }
+
+    // Обработать разные типы листов и полос
+    switch (formula) {
+      case 'sheet':
+        // Лист: [ширина_мм, толщина_мм]
+        // calculateSheetWeight ожидает (ширина_м, длина_м, толщина_мм)
+        // Для веса 1м передаём длину = 1
+        return formulas.calculateSheetWeight(width / 1000, 1, thickness);
+
+      case 'strip':
+        // Полоса: [ширина_мм, толщина_мм]
+        // calculateStripWeight ожидает (ширина_мм, толщина_мм, длина_м)
+        // Для веса 1м передаём длину = 1
+        return formulas.calculateStripWeight(width, thickness, 1);
+
+      default:
+        return null;
+    }
   }
 
   // Проверить, что размер является числом для формульных расчетов
