@@ -17,26 +17,46 @@
       <p class="text-gray-600">Точный расчет веса, длины и количества</p>
     </div>
 
+    <!-- Инструкции -->
+    <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6 rounded">
+      <h3 class="font-bold text-blue-900 mb-2">📖 Как пользоваться калькулятором:</h3>
+      <ol class="list-decimal ml-5 text-sm text-blue-800 space-y-1">
+        <li>Выберите тип металла из списка (<strong>70+ вариантов</strong>)</li>
+        <li>Введите размер (доступные размеры показаны под полем)</li>
+        <li>Для катанки выберите марку стали (37 вариантов)</li>
+        <li>Выберите режим расчёта: по весу / длине / количеству штук</li>
+        <li>Введите известное значение и нажмите "Рассчитать"</li>
+      </ol>
+
+      <div class="mt-3 p-2 bg-white rounded border border-blue-200">
+        <p class="text-xs text-blue-700">
+          <strong>💡 Пример:</strong> Катанка → Размер: 10 → Сталь: ст3 → По длине: 100 метров<br>
+          <strong>Результат:</strong> Вес 1м = 0.616 кг, Общий вес = 61.6 кг
+        </p>
+      </div>
+    </div>
+
     <!-- Форма -->
     <form id="calculator-form" class="space-y-6">
 
       <!-- Тип металла -->
       <div>
-        <label class="block text-sm font-semibold text-gray-700 mb-2">Тип металла</label>
+        <label class="block text-sm font-semibold text-gray-700 mb-2">
+          Тип металла
+          <span id="metal-count" class="text-xs text-gray-500 font-normal"></span>
+        </label>
         <select id="metal-type" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition">
-          <option value="">Выберите металл</option>
-          <option value="armature_a1">Арматура А1</option>
-          <option value="armature_a1_galv">Арматура А1 оцинкованная</option>
-          <option value="armature_a3">Арматура А3</option>
-          <option value="armature_a3_galv">Арматура А3 оцинкованная</option>
-          <option value="beam">Балка</option>
-          <option value="channel">Швеллер</option>
-          <option value="angle">Уголок</option>
-          <option value="pipe">Труба круглая</option>
-          <option value="circle">Круг</option>
-          <option value="square">Квадрат</option>
-          <option value="sheet">Лист</option>
+          <option value="">⏳ Загрузка металлов...</option>
         </select>
+        <!-- ГОСТ и категория -->
+        <div id="metal-info" class="mt-2 hidden">
+          <p class="text-xs text-blue-700">
+            <strong>📋 ГОСТ:</strong> <span id="gost-text" class="font-mono"></span>
+          </p>
+          <p class="text-xs text-gray-600">
+            <strong>📁 Категория:</strong> <span id="category-text"></span>
+          </p>
+        </div>
       </div>
 
       <!-- Размер -->
@@ -49,6 +69,88 @@
           class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition"
         >
         <p id="size-hint" class="text-xs text-gray-500 mt-1"></p>
+        <!-- Доступные размеры -->
+        <div id="available-sizes" class="mt-2 hidden">
+          <div class="bg-gray-50 border border-gray-200 rounded p-2">
+            <p class="text-xs text-gray-700">
+              <strong>📏 Доступные размеры:</strong>
+              <span id="sizes-list" class="font-mono text-blue-600"></span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Специальные поля для катанки -->
+      <div id="katanka-fields" class="hidden space-y-4 border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+
+        <!-- Марка стали -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Марка стали</label>
+          <select id="steel-type" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <optgroup label="Обычные стали">
+              <option value="ст08">ст08 (7.871 т/м³)</option>
+              <option value="ст0">ст0 (7.85 т/м³)</option>
+              <option value="ст1">ст1 (7.85 т/м³)</option>
+              <option value="ст2">ст2 (7.85 т/м³)</option>
+              <option value="ст3" selected>ст3 (7.85 т/м³)</option>
+              <option value="ст10">ст10 (7.856 т/м³)</option>
+              <option value="ст15">ст15 (7.85 т/м³)</option>
+              <option value="ст20">ст20 (7.859 т/м³)</option>
+              <option value="ст30">ст30 (7.85 т/м³)</option>
+              <option value="ст35">ст35 (7.826 т/м³)</option>
+              <option value="ст40">ст40 (7.85 т/м³)</option>
+              <option value="ст45">ст45 (7.826 т/м³)</option>
+              <option value="ст50">ст50 (7.81 т/м³)</option>
+              <option value="ст55">ст55 (7.82 т/м³)</option>
+              <option value="ст60">ст60 (7.8 т/м³)</option>
+            </optgroup>
+            <optgroup label="Легированные стали">
+              <option value="09Г2С">09Г2С (7.85 т/м³)</option>
+              <option value="10Г2">10Г2 (7.79 т/м³)</option>
+              <option value="15Г">15Г (7.81 т/м³)</option>
+              <option value="15Х">15Х (7.83 т/м³)</option>
+              <option value="20Г">20Г (7.82 т/м³)</option>
+              <option value="20Х">20Х (7.83 т/м³)</option>
+              <option value="30Г">30Г (7.81 т/м³)</option>
+              <option value="30Х">30Х (7.82 т/м³)</option>
+              <option value="35Г2">35Г2 (7.79 т/м³)</option>
+              <option value="40Г">40Г (7.81 т/м³)</option>
+              <option value="40Х">40Х (7.85 т/м³)</option>
+              <option value="45Г2">45Г2 (7.81 т/м³)</option>
+              <option value="45Х">45Х (7.82 т/м³)</option>
+              <option value="50Г">50Г (7.81 т/м³)</option>
+              <option value="50Г2">50Г2 (7.5 т/м³)</option>
+              <option value="50Х">50Х (7.82 т/м³)</option>
+              <option value="65Г">65Г (7.85 т/м³)</option>
+            </optgroup>
+            <optgroup label="Инструментальные стали">
+              <option value="У7">У7 (7.83 т/м³)</option>
+              <option value="У8">У8 (7.839 т/м³)</option>
+              <option value="У10">У10 (7.81 т/м³)</option>
+              <option value="У12">У12 (7.83 т/м³)</option>
+            </optgroup>
+            <optgroup label="Быстрорежущие стали">
+              <option value="Р18">Р18 (8.8 т/м³)</option>
+            </optgroup>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Плотность стали влияет на вес</p>
+        </div>
+
+        <!-- Длина 1 штуки -->
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Длина 1 штуки (м)</label>
+          <input
+            type="number"
+            id="piece-length"
+            value="1"
+            step="0.1"
+            min="0.1"
+            placeholder="1"
+            class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition"
+          >
+          <p class="text-xs text-gray-500 mt-1">Используется для расчёта количества штук</p>
+        </div>
+
       </div>
 
       <!-- Режим расчета -->
@@ -113,6 +215,24 @@
       <div id="result-card" class="p-6 rounded-lg border-4">
         <h2 class="text-2xl font-bold mb-4" id="result-title"></h2>
         <div id="result-content" class="space-y-3"></div>
+
+        <!-- Действия с результатом -->
+        <div class="mt-6 flex gap-3 flex-wrap">
+          <button
+            onclick="copyResultToClipboard()"
+            type="button"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+          >
+            📋 Копировать результат
+          </button>
+          <button
+            onclick="resetCalculator()"
+            type="button"
+            class="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition"
+          >
+            🔄 Новый расчет
+          </button>
+        </div>
       </div>
     </div>
 
@@ -144,6 +264,7 @@
     // Глобальные переменные
     let metalDatabase = null;
     let isLoading = false;
+    let lastResult = null; // Для экспорта результата
 
     // Загрузка базы данных при загрузке страницы
     async function loadDatabase() {
@@ -151,33 +272,163 @@
         const response = await fetch('./database/metals.json');
         if (!response.ok) throw new Error('Не удалось загрузить базу данных');
         metalDatabase = await response.json();
-        console.log('✅ База данных загружена');
+        console.log('✅ База данных загружена:', Object.keys(metalDatabase.metals).length, 'металлов');
+
+        // Заполнить dropdown металлами
+        populateMetalDropdown();
       } catch (error) {
         console.error('❌ Ошибка загрузки базы:', error);
         showError('Ошибка загрузки базы данных. Проверьте подключение к интернету.');
       }
     }
 
-    // Обновление подсказки для размера
+    // Заполнить dropdown всеми металлами из БД с группировкой
+    function populateMetalDropdown() {
+      const dropdown = document.getElementById('metal-type');
+      const metalCountSpan = document.getElementById('metal-count');
+
+      // Очистить dropdown
+      dropdown.innerHTML = '<option value="">-- Выберите металл --</option>';
+
+      // Группируем металлы по категориям
+      const categories = {};
+      let totalCount = 0;
+
+      for (const [key, metal] of Object.entries(metalDatabase.metals)) {
+        const category = metal.category || 'Другое';
+        if (!categories[category]) {
+          categories[category] = [];
+        }
+        categories[category].push({ key, name: metal.name });
+        totalCount++;
+      }
+
+      // Сортируем категории по алфавиту
+      const sortedCategories = Object.keys(categories).sort();
+
+      // Создаём optgroups для каждой категории
+      sortedCategories.forEach(category => {
+        const optgroup = document.createElement('optgroup');
+        optgroup.label = `${category} (${categories[category].length})`;
+
+        // Сортируем металлы внутри категории по имени
+        categories[category].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+
+        categories[category].forEach(metal => {
+          const option = document.createElement('option');
+          option.value = metal.key;
+          option.textContent = metal.name;
+          optgroup.appendChild(option);
+        });
+
+        dropdown.appendChild(optgroup);
+      });
+
+      // Показать количество металлов
+      metalCountSpan.textContent = `(${totalCount} доступно)`;
+      console.log(`✅ Dropdown заполнен: ${totalCount} металлов в ${sortedCategories.length} категориях`);
+    }
+
+    // Обновление информации при выборе металла
     document.getElementById('metal-type').addEventListener('change', (e) => {
       const metalType = e.target.value;
+
+      if (!metalType || !metalDatabase) return;
+
+      const metal = metalDatabase.metals[metalType];
+      if (!metal) return;
+
+      // Показать ГОСТ и категорию
+      const metalInfo = document.getElementById('metal-info');
+      const gostText = document.getElementById('gost-text');
+      const categoryText = document.getElementById('category-text');
+
+      gostText.textContent = metal.gost || 'Не указан';
+      categoryText.textContent = metal.category || 'Не указана';
+      metalInfo.classList.remove('hidden');
+
+      // Показать доступные размеры
+      const availableSizes = document.getElementById('available-sizes');
+      const sizesList = document.getElementById('sizes-list');
       const sizeHint = document.getElementById('size-hint');
 
-      const hints = {
-        'armature_a1': 'Например: 6, 8, 10, 12, 14, 16',
-        'armature_a1_galv': 'Например: 6, 8, 10, 12, 14, 16',
-        'armature_a3': 'Например: 6, 8, 10, 12, 14, 16, 20, 25',
-        'armature_a3_galv': 'Например: 6, 8, 10, 12, 14, 16, 20, 25',
-        'beam': 'Например: 10, 20К1, 30Б1, 40Ш1',
-        'channel': 'Например: 10У, 16П, 20У',
-        'angle': 'Например: 50x50x5, 75x75x6',
-        'pipe': 'Например: диаметр трубы',
-        'circle': 'Например: 10, 12, 16, 20',
-        'square': 'Например: 10, 12, 16, 20',
-        'sheet': 'Например: толщина листа'
-      };
+      // ✅ ТРУБЫ И УГОЛКИ: Заменяем текстовый input на dropdown для массивов
+      const sizeInput = document.getElementById('size');
+      const isPipe = metalType.includes('pipe') || metalType.includes('angle');
 
-      sizeHint.textContent = hints[metalType] || 'Введите размер металла';
+      if (isPipe && metal.sizes && metal.sizes.length > 0) {
+        // Для труб создаем dropdown со всеми размерами
+        const select = document.createElement('select');
+        select.id = 'size';
+        select.className = sizeInput.className;
+
+        // Добавляем пустой вариант
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Выберите размер --';
+        select.appendChild(emptyOption);
+
+        // Добавляем все размеры
+        metal.sizes.forEach(size => {
+          const option = document.createElement('option');
+          option.value = JSON.stringify(size); // Сохраняем массив как JSON
+          option.textContent = Array.isArray(size) ? size.join('×') : size;
+          select.appendChild(option);
+        });
+
+        // Заменяем input на select
+        sizeInput.parentNode.replaceChild(select, sizeInput);
+        availableSizes.classList.add('hidden'); // Скрываем список размеров
+        sizeHint.textContent = `Выберите размер из списка (всего ${metal.sizes.length} вариантов)`;
+      } else {
+        // Для НЕ-труб: восстанавливаем текстовый input если нужно
+        if (sizeInput.tagName === 'SELECT') {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.id = 'size';
+          input.className = sizeInput.className;
+          input.placeholder = 'Например: 12, 20К1, 10У';
+          sizeInput.parentNode.replaceChild(input, sizeInput);
+        }
+
+        if (metal.sizes && metal.sizes.length > 0) {
+          // Форматируем размеры (первые 15, если их много)
+          const formatSize = (s) => Array.isArray(s) ? s.join('×') : s;
+          const displaySizes = metal.sizes.length > 15
+            ? metal.sizes.slice(0, 15).map(formatSize).join(', ') + '...'
+            : metal.sizes.map(formatSize).join(', ');
+
+          sizesList.textContent = displaySizes;
+          availableSizes.classList.remove('hidden');
+          sizeHint.textContent = `Всего ${metal.sizes.length} размеров доступно`;
+        } else if (metal.weights && Object.keys(metal.weights).length > 0) {
+          // Для металлов с таблицей весов (балка, швеллер и т.д.)
+          const sizes = Object.keys(metal.weights);
+          const displaySizes = sizes.length > 15
+            ? sizes.slice(0, 15).join(', ') + '...'
+            : sizes.join(', ');
+
+          sizesList.textContent = displaySizes;
+          availableSizes.classList.remove('hidden');
+          sizeHint.textContent = `Всего ${sizes.length} размеров доступно`;
+        } else {
+          availableSizes.classList.add('hidden');
+          // Специальная подсказка для листов и полос
+          if (metalType.includes('sheet') || metalType.includes('strip')) {
+            sizeHint.textContent = 'Введите размер в формате [ширина, толщина], например: [1000, 1]';
+          } else {
+            sizeHint.textContent = 'Введите размер металла';
+          }
+        }
+      }
+
+      // Показать/скрыть поля катанки
+      const katankaFields = document.getElementById('katanka-fields');
+      if (metalType === 'wire_rod') {
+        katankaFields.classList.remove('hidden');
+      } else {
+        katankaFields.classList.add('hidden');
+      }
     });
 
     // Обновление label при изменении режима расчета
@@ -246,18 +497,49 @@
       }
 
       // Подготовка параметров для расчета
+      let parsedSize = size;
+
+      // ✅ ДЛЯ ТРУБ, УГОЛКОВ, ЛИСТОВ И ПОЛОС: Парсим JSON-строку обратно в массив
+      if (metalType.includes('pipe') || metalType.includes('angle') ||
+          metalType.includes('sheet') || metalType.includes('strip')) {
+        try {
+          parsedSize = JSON.parse(size);
+        } catch (e) {
+          // Если не удалось распарсить, оставляем как есть
+          parsedSize = isNaN(size) ? size : parseFloat(size);
+        }
+      } else {
+        // Для других металлов: преобразуем в число если возможно
+        parsedSize = isNaN(size) ? size : parseFloat(size);
+      }
+
       const params = {
         metalType: metalType,
-        size: isNaN(size) ? size : parseFloat(size)
+        size: parsedSize
       };
 
       // Добавляем параметр в зависимости от режима
       if (calcMode === 'weight') {
-        params.weight = value;
+        params.weight = value / 1000; // Конвертируем кг в тонны
       } else if (calcMode === 'length') {
         params.length = value;
       } else if (calcMode === 'pieces') {
         params.pieces = value;
+      }
+
+      // Для катанки добавляем специальные параметры
+      if (metalType === 'wire_rod') {
+        const steelType = document.getElementById('steel-type').value;
+        const pieceLength = parseFloat(document.getElementById('piece-length').value);
+
+        params.steelType = steelType;
+
+        // pieceLength используется для расчета количества штук
+        // Но в текущей версии калькулятора нет standardLength для катанки,
+        // так что это пока не используется. Оставим на будущее.
+        if (pieceLength > 0) {
+          params.pieceLength = pieceLength;
+        }
       }
 
       // Добавляем параметры оцинковки
@@ -291,6 +573,9 @@
 
     // Показать результат
     function showResult(result) {
+      // Сохраняем результат для экспорта
+      lastResult = result;
+
       const container = document.getElementById('result-container');
       const card = document.getElementById('result-card');
       const title = document.getElementById('result-title');
@@ -305,12 +590,24 @@
       let html = '';
 
       html += createResultRow('📦 Металл', result.metalType);
-      html += createResultRow('📏 Размер', result.size);
+
+      // ✅ ДЛЯ ТРУБ: Форматируем размер как 20×2.5
+      const formattedSize = Array.isArray(result.size)
+        ? result.size.join('×') + ' мм'
+        : (typeof result.size === 'number' ? result.size + ' мм' : result.size);
+
+      html += createResultRow('📏 Размер', formattedSize);
+
+      // Для катанки показываем марку стали
+      if (result.steelType) {
+        html += createResultRow('🔩 Марка стали', result.steelType);
+      }
+
       html += createResultRow('📋 ГОСТ', result.gost);
       html += createResultRow('⚖️ Вес 1 метра', result.weightPerMeter.toFixed(3) + ' кг');
 
       if (result.weight !== undefined) {
-        html += createResultRow('💰 Общий вес', result.weight.toFixed(2) + ' кг', true);
+        html += createResultRow('💰 Общий вес', (result.weight * 1000).toFixed(2) + ' кг', true);
       }
 
       if (result.length !== undefined) {
@@ -384,6 +681,65 @@
       } else {
         loading.classList.add('hidden');
       }
+    }
+
+    // Копировать результат в буфер обмена
+    function copyResultToClipboard() {
+      if (!lastResult) {
+        alert('⚠️ Нет результата для копирования');
+        return;
+      }
+
+      // ✅ Форматируем размер для труб
+      const formattedSize = Array.isArray(lastResult.size)
+        ? lastResult.size.join('×') + ' мм'
+        : (typeof lastResult.size === 'number' ? lastResult.size + ' мм' : lastResult.size);
+
+      const text = `
+═══════════════════════════════════════
+  РЕЗУЛЬТАТ РАСЧЁТА - Калькулятор 23met
+═══════════════════════════════════════
+
+📦 Металл: ${lastResult.metalType}
+📏 Размер: ${formattedSize}
+${lastResult.steelType ? `🔩 Марка стали: ${lastResult.steelType}\n` : ''}📋 ГОСТ: ${lastResult.gost}
+📁 Категория: ${lastResult.category}
+
+⚖️  Вес 1 метра: ${lastResult.weightPerMeter.toFixed(3)} кг
+${lastResult.weight !== undefined ? `💰 Общий вес: ${(lastResult.weight * 1000).toFixed(2)} кг (${lastResult.weight.toFixed(3)} т)\n` : ''}${lastResult.length !== undefined ? `📐 Длина: ${lastResult.length.toFixed(2)} м\n` : ''}${lastResult.pieces !== undefined ? `🔢 Количество: ${lastResult.pieces} шт\n` : ''}${lastResult.isGalvanized ? `✨ Оцинковка: Да\n` : ''}
+📅 Дата расчёта: ${new Date().toLocaleString('ru-RU')}
+
+═══════════════════════════════════════
+Powered by Metal Calculator API • 23met
+      `.trim();
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('✅ Результат скопирован в буфер обмена!');
+      }).catch(err => {
+        console.error('Ошибка копирования:', err);
+        alert('❌ Не удалось скопировать. Попробуйте вручную.');
+      });
+    }
+
+    // Сбросить форму для нового расчета
+    function resetCalculator() {
+      // Скрыть результат
+      document.getElementById('result-container').classList.add('hidden');
+
+      // Очистить форму
+      document.getElementById('calculator-form').reset();
+
+      // Скрыть дополнительные блоки
+      document.getElementById('metal-info').classList.add('hidden');
+      document.getElementById('available-sizes').classList.add('hidden');
+      document.getElementById('katanka-fields').classList.add('hidden');
+      document.getElementById('galv-coef-container').classList.add('hidden');
+
+      // Сбросить последний результат
+      lastResult = null;
+
+      // Прокрутить к началу формы
+      document.getElementById('calculator-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // Загрузка базы данных при старте
