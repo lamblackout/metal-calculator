@@ -89,21 +89,27 @@ function calculateMetal(params, metalDatabase) {
     let pieces = null;
 
     if (params.weight) {
-      // Дано: вес → найти длину и штуки
+      // Дано: вес (в тоннах) → найти длину и штуки
       weight = params.weight;
-      length = formulas.calculateLengthFromWeight(weight, weightPerMeter);
+      // Конвертируем тонны в кг для расчета длины
+      const weightInKg = weight * 1000;
+      length = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
       pieces = standardLength ? formulas.calculatePiecesFromLength(length, standardLength) : null;
     } else if (params.length) {
       // Дано: длина → найти вес и штуки
       length = params.length;
-      weight = weightPerMeter * length;
+      // Рассчитываем вес в кг, затем конвертируем в тонны
+      const weightInKg = weightPerMeter * length;
+      weight = weightInKg / 1000;
       pieces = standardLength ? formulas.calculatePiecesFromLength(length, standardLength) : null;
     } else if (params.pieces) {
       // Дано: штуки → найти длину и вес
       pieces = params.pieces;
       if (standardLength) {
         length = pieces * standardLength;
-        weight = weightPerMeter * length;
+        // Рассчитываем вес в кг, затем конвертируем в тонны
+        const weightInKg = weightPerMeter * length;
+        weight = weightInKg / 1000;
       } else {
         return {
           success: false,
@@ -126,7 +132,7 @@ function calculateMetal(params, metalDatabase) {
     };
 
     if (weight !== null) {
-      result.weight = roundTo(weight, 2);
+      result.weight = roundTo(weight, 3);
     }
     if (length !== null) {
       result.length = roundTo(length, 2);
@@ -155,6 +161,16 @@ function calculateMetal(params, metalDatabase) {
  */
 function calculateWeightPerMeter(metal, size) {
   const formula = metal.formula;
+
+  // ✅ НОВАЯ ЛОГИКА: Для канатов с useKilograms - использовать таблицу весов напрямую
+  if (metal.useKilograms && metal.weights) {
+    const weightValue = metal.weights[String(size)];
+    if (weightValue !== undefined && weightValue !== null) {
+      return weightValue;
+    }
+    // Если вес не найден в таблице
+    return null;
+  }
 
   // Для металлов с предрасчитанными весами (балка, швеллер, уголок и т.д.)
   if (formula === 'beam' || formula === 'channel' || formula === 'angle' ||
