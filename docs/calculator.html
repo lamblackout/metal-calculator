@@ -664,7 +664,7 @@
     /**
      * Debounce функция (задержка перед пересчётом)
      */
-    function debounceRecalculate(sourceField, delay = 500) {
+    function debounceRecalculate(sourceField, delay = 1500) {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         recalculateFields(sourceField);
@@ -802,10 +802,10 @@
 
       container.classList.remove('hidden');
 
-      // Прокрутка к результату
-      setTimeout(() => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
+      // Прокрутка к результату ОТКЛЮЧЕНА (UX: не мешаем вводу)
+      // setTimeout(() => {
+      //   container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // }, 100);
     }
 
     // ✅ НОВАЯ ФУНКЦИЯ: Улучшенное отображение с requested/actual/difference
@@ -963,10 +963,10 @@
 
       container.classList.remove('hidden');
 
-      // Прокрутка к ошибке
-      setTimeout(() => {
-        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      }, 100);
+      // Прокрутка к ошибке ОТКЛЮЧЕНА (UX: не мешаем вводу)
+      // setTimeout(() => {
+      //   container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // }, 100);
     }
 
     // Показать/скрыть индикатор загрузки
