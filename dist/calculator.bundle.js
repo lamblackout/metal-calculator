@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-05T14:21:53.086Z
+// Собрано: 2025-11-05T14:30:29.796Z
 // ==========================================
 
 // src/formulas.js
@@ -366,37 +366,26 @@ function calculateMetal(params, metalDatabase) {
       const weightInKg = requestedWeight * 1000;
       const calculatedLength = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
 
-      // Округляем штуки
-      pieces = standardLength ? formulas.calculatePiecesFromLength(calculatedLength, standardLength) : null;
+      // ✅ Округляем штуки (используем 1м по умолчанию если нет standardLength)
+      const pieceLength = standardLength || 1;
+      pieces = formulas.calculatePiecesFromLength(calculatedLength, pieceLength);
 
       // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
-      if (pieces !== null && standardLength) {
-        length = pieces * standardLength;  // Фактическая длина
-        const actualWeightKg = weightPerMeter * length;
-        weight = actualWeightKg / 1000;  // Фактический вес
-      } else {
-        // Если нет стандартной длины - оставляем как было
-        length = calculatedLength;
-        weight = requestedWeight;
-      }
+      length = pieces * pieceLength;  // Фактическая длина
+      const actualWeightKg = weightPerMeter * length;
+      weight = actualWeightKg / 1000;  // Фактический вес
     } else if (params.length) {
       // Дано: длина → найти вес и штуки
       const requestedLength = params.length;  // Сохраняем запрошенную длину
 
-      // Округляем штуки
-      pieces = standardLength ? formulas.calculatePiecesFromLength(requestedLength, standardLength) : null;
+      // ✅ Округляем штуки (используем 1м по умолчанию если нет standardLength)
+      const pieceLength = standardLength || 1;
+      pieces = formulas.calculatePiecesFromLength(requestedLength, pieceLength);
 
       // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
-      if (pieces !== null && standardLength) {
-        length = pieces * standardLength;  // Фактическая длина
-        const actualWeightKg = weightPerMeter * length;
-        weight = actualWeightKg / 1000;  // Фактический вес
-      } else {
-        // Если нет стандартной длины - оставляем как было
-        length = requestedLength;
-        const weightInKg = weightPerMeter * length;
-        weight = weightInKg / 1000;
-      }
+      length = pieces * pieceLength;  // Фактическая длина
+      const actualWeightKg = weightPerMeter * length;
+      weight = actualWeightKg / 1000;  // Фактический вес
     } else if (params.pieces) {
       // Дано: штуки → найти длину и вес
       pieces = params.pieces;
