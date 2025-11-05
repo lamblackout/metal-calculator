@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-05T13:13:51.962Z
+// Собрано: 2025-11-05T13:56:53.314Z
 // ==========================================
 
 (function(window) {
@@ -727,8 +727,6 @@ function roundTo(value, decimals) {
 
 
   // ============ ЭКСПОРТ В WINDOW ============
-  window.MetalCalculator = {
-    calculateMetal: calculateMetal
-  };
+  window.calculateMetal = calculateMetal;
 
 })(window);

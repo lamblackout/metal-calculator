@@ -70,9 +70,7 @@ const browserBundle = `// ==========================================
 ${coreCode}
 
   // ============ ЭКСПОРТ В WINDOW ============
-  window.MetalCalculator = {
-    calculateMetal: calculateMetal
-  };
+  window.calculateMetal = calculateMetal;
 
 })(window);
 `;
