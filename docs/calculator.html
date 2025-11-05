@@ -631,18 +631,33 @@
         // ВЫЗВАТЬ КАЛЬКУЛЯТОР
         const result = calculateMetal(params, metalDatabase);
 
+        // ✅ ОТЛАДКА
+        console.log('=== ОТЛАДКА recalculateFields ===');
+        console.log('sourceField:', sourceField);
+        console.log('result.success:', result.success);
+        console.log('result.actual:', result.actual);
+        console.log('result.actual.pieces:', result.actual ? result.actual.pieces : 'undefined');
+        console.log('result.standardLength:', result.standardLength);
+        console.log('Условие pieces:', sourceField !== 'pieces', '&&', result.actual && result.actual.pieces !== null);
+        console.log('================================');
+
         if (result.success) {
           // Заполнить остальные поля (кроме источника)
           if (sourceField !== 'weight' && result.actual.weight !== null) {
             weightInput.value = result.actual.weight.toFixed(3);
+            console.log('✅ Weight заполнен:', weightInput.value);
           }
 
           if (sourceField !== 'length' && result.actual.length !== null) {
             lengthInput.value = result.actual.length.toFixed(2);
+            console.log('✅ Length заполнен:', lengthInput.value);
           }
 
           if (sourceField !== 'pieces' && result.actual.pieces !== null) {
             piecesInput.value = result.actual.pieces;
+            console.log('✅ Pieces заполнен:', piecesInput.value);
+          } else {
+            console.log('❌ Pieces НЕ заполнен! sourceField:', sourceField, 'pieces:', result.actual ? result.actual.pieces : 'undefined');
           }
 
           // Показать результат
