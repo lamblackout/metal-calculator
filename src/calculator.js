@@ -126,18 +126,41 @@ function calculateMetal(params, metalDatabase) {
 
     if (params.weight) {
       // Дано: вес (в тоннах) → найти длину и штуки
-      weight = params.weight;
-      // Конвертируем тонны в кг для расчета длины
-      const weightInKg = weight * 1000;
-      length = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
-      pieces = standardLength ? formulas.calculatePiecesFromLength(length, standardLength) : null;
+      const requestedWeight = params.weight;  // Сохраняем запрошенный вес
+      const weightInKg = requestedWeight * 1000;
+      const calculatedLength = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
+
+      // Округляем штуки
+      pieces = standardLength ? formulas.calculatePiecesFromLength(calculatedLength, standardLength) : null;
+
+      // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
+      if (pieces !== null && standardLength) {
+        length = pieces * standardLength;  // Фактическая длина
+        const actualWeightKg = weightPerMeter * length;
+        weight = actualWeightKg / 1000;  // Фактический вес
+      } else {
+        // Если нет стандартной длины - оставляем как было
+        length = calculatedLength;
+        weight = requestedWeight;
+      }
     } else if (params.length) {
       // Дано: длина → найти вес и штуки
-      length = params.length;
-      // Рассчитываем вес в кг, затем конвертируем в тонны
-      const weightInKg = weightPerMeter * length;
-      weight = weightInKg / 1000;
-      pieces = standardLength ? formulas.calculatePiecesFromLength(length, standardLength) : null;
+      const requestedLength = params.length;  // Сохраняем запрошенную длину
+
+      // Округляем штуки
+      pieces = standardLength ? formulas.calculatePiecesFromLength(requestedLength, standardLength) : null;
+
+      // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
+      if (pieces !== null && standardLength) {
+        length = pieces * standardLength;  // Фактическая длина
+        const actualWeightKg = weightPerMeter * length;
+        weight = actualWeightKg / 1000;  // Фактический вес
+      } else {
+        // Если нет стандартной длины - оставляем как было
+        length = requestedLength;
+        const weightInKg = weightPerMeter * length;
+        weight = weightInKg / 1000;
+      }
     } else if (params.pieces) {
       // Дано: штуки → найти длину и вес
       pieces = params.pieces;
@@ -149,6 +172,37 @@ function calculateMetal(params, metalDatabase) {
       weight = weightInKg / 1000;
     }
 
+    // ✅ ОПРЕДЕЛИТЬ ЧТО БЫЛО ЗАПРОШЕНО
+    const requested = {};
+    if (params.weight) {
+      requested.value = params.weight;
+      requested.unit = 'weight';
+      requested.label = `${params.weight} т`;
+    } else if (params.length) {
+      requested.value = params.length;
+      requested.unit = 'length';
+      requested.label = `${params.length} м`;
+    } else if (params.pieces) {
+      requested.value = params.pieces;
+      requested.unit = 'pieces';
+      requested.label = `${params.pieces} шт`;
+    }
+
+    // ✅ РАССЧИТАТЬ РАЗНИЦУ (только если было округление)
+    const difference = {};
+    if (params.weight && weight !== null) {
+      const diff = (weight - params.weight) * 1000; // в кг
+      if (diff > 0.01) { // Если разница больше 10 грамм
+        difference.weight = `+${diff.toFixed(1)} кг`;
+      }
+    }
+    if (params.length && length !== null) {
+      const diff = length - params.length;
+      if (diff > 0.01) { // Если разница больше 1см
+        difference.length = `+${diff.toFixed(1)} м`;
+      }
+    }
+
     // Сформировать результат
     const result = {
       success: true,
@@ -156,8 +210,23 @@ function calculateMetal(params, metalDatabase) {
       size: params.size,
       gost: metal.gost || 'Не указан',
       category: metal.category || 'Не указана',
-      // Для крепежа нужна высокая точность (вес очень мал)
+
+      // ✅ Запрошенные значения
+      requested: requested,
+
+      // ✅ Фактические значения (кратно штукам)
+      actual: {
+        weight: weight !== null ? roundTo(weight, metal.category === 'Крепеж' ? 6 : 3) : null,
+        length: length !== null ? roundTo(length, 2) : null,
+        pieces: pieces
+      },
+
+      // ✅ Разница
+      difference: Object.keys(difference).length > 0 ? difference : null,
+
+      // Дополнительная информация
       weightPerMeter: roundTo(weightPerMeter, metal.category === 'Крепеж' ? 6 : 3),
+      standardLength: standardLength,
       isGalvanized: isGalvanized
     };
 
@@ -166,8 +235,9 @@ function calculateMetal(params, metalDatabase) {
       result.steelType = steelType;
     }
 
+    // ⚠️ ОБРАТНАЯ СОВМЕСТИМОСТЬ: Дублируем weight/length/pieces в корень
+    // (для старого кода который ожидает result.weight напрямую)
     if (weight !== null) {
-      // Для крепежа нужна высокая точность (малый вес)
       result.weight = roundTo(weight, metal.category === 'Крепеж' ? 6 : 3);
     }
     if (length !== null) {
@@ -389,12 +459,19 @@ function getStandardLength(metal) {
     return null;
   }
 
-  // Если есть массив стандартных длин, берем максимальную
-  if (Array.isArray(metal.standardLengths)) {
-    return Math.max(...metal.standardLengths);
+  // Если не массив - возвращаем как есть
+  if (!Array.isArray(metal.standardLengths)) {
+    return metal.standardLengths;
   }
 
-  return metal.standardLengths;
+  // ✅ СПЕЦИАЛЬНАЯ ЛОГИКА: Приоритет 11.7м (стандарт для арматуры с завода)
+  // Заказчик сказал: "11.7 - разу с производства выходят"
+  if (metal.standardLengths.includes(11.7)) {
+    return 11.7;
+  }
+
+  // Для остальных металлов берём максимальную длину
+  return Math.max(...metal.standardLengths);
 }
 
 /**
