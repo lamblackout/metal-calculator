@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-05T10:02:56.708Z
+// Собрано: 2025-11-05T10:17:22.951Z
 // ==========================================
 
 (function(window) {
@@ -380,19 +380,12 @@ function calculateMetal(params, metalDatabase) {
     } else if (params.pieces) {
       // Дано: штуки → найти длину и вес
       pieces = params.pieces;
-      if (standardLength) {
-        length = pieces * standardLength;
-        // Рассчитываем вес в кг, затем конвертируем в тонны
-        const weightInKg = weightPerMeter * length;
-        weight = weightInKg / 1000;
-      } else {
-        return {
-          success: false,
-          error: `Для металла '${metal.name}' не указана стандартная длина, невозможно рассчитать по количеству штук`,
-          metalType: params.metalType,
-          size: params.size
-        };
-      }
+      // ✅ ИСПРАВЛЕНИЕ: Если нет standardLength, используем 1 метр по умолчанию
+      const pieceLength = standardLength || 1; // По умолчанию 1 метр
+      length = pieces * pieceLength;
+      // Рассчитываем вес в кг, затем конвертируем в тонны
+      const weightInKg = weightPerMeter * length;
+      weight = weightInKg / 1000;
     }
 
     // Сформировать результат
