@@ -321,8 +321,10 @@
           </div>
         </div>
 
-        <!-- Поля для листовых металлов -->
-        <div class="form-row" id="sheet-fields" style="display: none;">
+        <!-- ===== ПОЛЯ ДЛЯ ЛИСТОВЫХ МЕТАЛЛОВ (ОТДЕЛЬНЫЕ БЛОКИ) ===== -->
+
+        <!-- Поле: Площадь -->
+        <div class="form-row" id="field-area" style="display: none;">
           <div class="form-group flex-1">
             <label for="input-area">
               📦 Площадь
@@ -332,12 +334,15 @@
               type="number"
               id="input-area"
               class="form-control"
-              placeholder="или укажите ширину × длину"
+              placeholder="например: 10"
               step="0.01"
               min="0"
             >
           </div>
+        </div>
 
+        <!-- Поле: Ширина -->
+        <div class="form-row" id="field-width" style="display: none;">
           <div class="form-group flex-1">
             <label for="input-width">
               ↔️ Ширина
@@ -352,7 +357,10 @@
               min="0"
             >
           </div>
+        </div>
 
+        <!-- Поле: Длина листа -->
+        <div class="form-row" id="field-length-sheet" style="display: none;">
           <div class="form-group flex-1">
             <label for="input-length-sheet">
               ↕️ Длина листа
@@ -370,8 +378,9 @@
         </div>
 
         <!-- Автоматически рассчитанная площадь -->
-        <div id="calculated-area-box" class="info-box" style="display: none;">
-          📐 Площадь (автоматически): <strong id="calculated-area-value">-</strong> м²
+        <div id="calculated-area-box" class="info-box" style="display: none; margin-top: 8px; background: #e3f2fd; border-left: 4px solid #2196f3;">
+          <strong>📐 Площадь (автоматически):</strong>
+          <span id="calculated-area-value">0</span> м²
         </div>
 
         <div class="info-box">
@@ -525,6 +534,10 @@
 
       const metal = metalDatabase.metals[metalType];
       if (!metal) return;
+
+      // 🔧 КРИТИЧЕСКИ ВАЖНО: Обновить видимость полей ширины/длины
+      console.log('📊 Выбран тип металла:', metalType);
+      updateSheetFieldsVisibility();
 
       // Показать ГОСТ и категорию
       const metalInfo = document.getElementById('metal-info');
@@ -785,58 +798,90 @@
 
     /**
      * Показать/скрыть поля для листовых металлов
+     * КРИТИЧЕСКИ ВАЖНАЯ ФУНКЦИЯ - управляет видимостью всех полей
      */
     function updateSheetFieldsVisibility() {
       const metalType = document.getElementById('metal-type').value;
-      if (!metalType || !metalDatabase) return;
 
-      const metal = metalDatabase.metals[metalType];
-      if (!metal) return;
+      console.log('🔧 updateSheetFieldsVisibility вызвана для типа:', metalType);
 
-      const sheetFields = document.getElementById('sheet-fields');
-      const lengthField = lengthInput.parentElement;
+      // Получить элементы ОТДЕЛЬНЫХ полей
+      const fieldArea = document.getElementById('field-area');
+      const fieldWidth = document.getElementById('field-width');
+      const fieldLengthSheet = document.getElementById('field-length-sheet');
+      const calculatedBox = document.getElementById('calculated-area-box');
 
-      // Определяем типы металлов которым нужны поля площади/ширины/длины
-      const isSheetType = (
-        metalType.includes('sheet_') ||   // Все листы
-        metalType.includes('strip_')      // Все ленты
+      // Проверка существования элементов
+      if (!fieldArea || !fieldWidth || !fieldLengthSheet) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Не найдены элементы листовых полей!');
+        console.error('  field-area:', fieldArea ? '✅' : '❌');
+        console.error('  field-width:', fieldWidth ? '✅' : '❌');
+        console.error('  field-length-sheet:', fieldLengthSheet ? '✅' : '❌');
+        return;
+      }
+
+      // ===== ОПРЕДЕЛЯЕМ ТИПЫ МЕТАЛЛОВ =====
+
+      // Листы и ленты с площадью (нужны все 3 поля)
+      const needsAllSheetFields = (
+        metalType === 'strip_tape' ||      // Лента/штрипс
+        metalType === 'strip_tape_painted' || // Лента/штрипс окраш.
+        metalType === 'strip_tape_galv' || // Лента/штрипс оц.
+        metalType === 'sheet_hot' ||       // Лист/рулон г/к
+        metalType === 'sheet_cold' ||      // Лист/рулон х/к
+        metalType === 'sheet_galv' ||      // Лист/рулон оцинк.
+        metalType === 'sheet_painted' ||   // Лист/рулон окраш.
+        metalType === 'sheet_pv' ||        // Лист ПВ
+        metalType === 'sheet_pv_galv'      // Лист ПВ оцинк.
       );
 
-      const isPVSheet = (
-        metalType === 'sheet_pv' ||
-        metalType === 'sheet_pv_galv'
-      );
+      // Лист рифленый (только площадь, без ширины/длины)
+      const needsOnlyArea = metalType === 'sheet_checkered';
 
-      const isCheckeredSheet = metalType === 'sheet_checkered';
+      // ===== ПОКАЗАТЬ ИЛИ СКРЫТЬ ПОЛЯ =====
 
-      // Для Лист ПВ: показываем погонные метры + ширина/длина
-      if (isPVSheet) {
-        lengthField.style.display = 'block';
-        lengthField.querySelector('label').textContent = '📐 Длина';
-        lengthField.querySelector('.field-hint').textContent = 'погонные метры';
-        sheetFields.style.display = 'flex';  // Показываем площадь/ширину/длину
-      }
-      // Для Лист рифленый: только площадь (без ширины/длины)
-      else if (isCheckeredSheet) {
-        lengthField.style.display = 'none';  // Скрываем погонные метры
-        sheetFields.style.display = 'flex';  // Показываем площадь
-        // Скрываем ширину и длину для рифленого
-        widthInput.parentElement.style.display = 'none';
-        lengthSheetInput.parentElement.style.display = 'none';
-      }
-      // Для других листов/лент: площадь + ширина × длина
-      else if (isSheetType) {
-        lengthField.style.display = 'none';  // Скрываем погонные метры
-        sheetFields.style.display = 'flex';  // Показываем площадь/ширину/длину
-        widthInput.parentElement.style.display = 'block';
-        lengthSheetInput.parentElement.style.display = 'block';
-      }
-      // Для круга и других погонных: только метры
-      else {
-        lengthField.style.display = 'block';
-        lengthField.querySelector('label').textContent = '📐 Длина';
-        lengthField.querySelector('.field-hint').textContent = 'метры';
-        sheetFields.style.display = 'none';  // Скрываем поля для листов
+      if (needsAllSheetFields) {
+        console.log('✅ Показываем ВСЕ листовые поля для', metalType);
+
+        // Показать все три поля
+        fieldArea.style.display = 'block';
+        fieldWidth.style.display = 'block';
+        fieldLengthSheet.style.display = 'block';
+
+        // Очистить значения при смене типа
+        areaInput.value = '';
+        widthInput.value = '';
+        lengthSheetInput.value = '';
+
+        // Скрыть блок с автоматической площадью
+        if (calculatedBox) calculatedBox.style.display = 'none';
+
+      } else if (needsOnlyArea) {
+        console.log('✅ Показываем ТОЛЬКО площадь для', metalType);
+
+        // Показать только площадь
+        fieldArea.style.display = 'block';
+        fieldWidth.style.display = 'none';
+        fieldLengthSheet.style.display = 'none';
+
+        // Очистить значения
+        areaInput.value = '';
+        widthInput.value = '';
+        lengthSheetInput.value = '';
+
+        // Скрыть блок с автоматической площадью
+        if (calculatedBox) calculatedBox.style.display = 'none';
+
+      } else {
+        console.log('❌ Скрываем все листовые поля для', metalType);
+
+        // Скрыть все три поля
+        fieldArea.style.display = 'none';
+        fieldWidth.style.display = 'none';
+        fieldLengthSheet.style.display = 'none';
+
+        // Скрыть блок с автоматической площадью
+        if (calculatedBox) calculatedBox.style.display = 'none';
       }
     }
 
@@ -1307,6 +1352,23 @@ Powered by Metal Calculator API
     loadDatabase().then(() => {
       // После загрузки БД включаем автоматический расчёт
       setupAutoCalculate();
+
+      // ===== ОТЛАДКА: Проверка существования элементов =====
+      console.log('📱 Калькулятор загружен');
+      console.log('📦 Проверка элементов листовых полей:');
+      console.log('  - field-area:', document.getElementById('field-area') ? '✅' : '❌');
+      console.log('  - field-width:', document.getElementById('field-width') ? '✅' : '❌');
+      console.log('  - field-length-sheet:', document.getElementById('field-length-sheet') ? '✅' : '❌');
+      console.log('  - input-area:', document.getElementById('input-area') ? '✅' : '❌');
+      console.log('  - input-width:', document.getElementById('input-width') ? '✅' : '❌');
+      console.log('  - input-length-sheet:', document.getElementById('input-length-sheet') ? '✅' : '❌');
+
+      // ===== ВЫЗВАТЬ updateSheetFieldsVisibility ЕСЛИ УЖЕ ВЫБРАН ТИП =====
+      const metalTypeSelect = document.getElementById('metal-type');
+      if (metalTypeSelect && metalTypeSelect.value) {
+        console.log('🔄 Инициализация полей для уже выбранного типа:', metalTypeSelect.value);
+        updateSheetFieldsVisibility();
+      }
     });
   </script>
 </body>
