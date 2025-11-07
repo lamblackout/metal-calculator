@@ -52,6 +52,13 @@ function calculateMetal(params, metalDatabase) {
       };
     }
 
+    // ✅ ОБРАБОТКА ШИРИНЫ × ДЛИНЫ ДЛЯ ЛИСТОВЫХ МЕТАЛЛОВ
+    // Если заданы width и lengthSheet - рассчитать area ПЕРЕД валидацией
+    if (params.width && params.lengthSheet && !params.area) {
+      params.area = params.width * params.lengthSheet;
+      console.log(`📏 Рассчитана площадь из ширины × длины: ${params.width} × ${params.lengthSheet} = ${params.area} м²`);
+    }
+
     // Проверить наличие хотя бы одного параметра для расчета
     if (!params.weight && !params.length && !params.pieces && !params.area) {
       return {
