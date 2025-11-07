@@ -53,10 +53,10 @@ function calculateMetal(params, metalDatabase) {
     }
 
     // Проверить наличие хотя бы одного параметра для расчета
-    if (!params.weight && !params.length && !params.pieces) {
+    if (!params.weight && !params.length && !params.pieces && !params.area) {
       return {
         success: false,
-        error: 'Укажите хотя бы один параметр: weight, length или pieces',
+        error: 'Укажите хотя бы один параметр: weight, length, pieces или area',
         metalType: params.metalType,
         size: params.size
       };
@@ -95,6 +95,137 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (в кг) = коэф_размера × коэф_стали
       // Коэффициенты уже в т/м³, поэтому результат будет в кг/м
+      weightPerMeter = sizeCoef * steelCoef;
+    } else if (metal.formula === 'sheet_pv') {
+      // ✅ ЛИСТ ПВ - стандарты (ТУ) вместо марок стали
+      // Формула: Вес (т) = coefficient × метры × 7.85 / 1000
+      const sizeStr = String(params.size);
+      const standards = metal.sizeStandards?.[sizeStr];
+
+      if (!standards || standards.length === 0) {
+        return {
+          success: false,
+          error: `Для размера ${sizeStr} листа ПВ нет доступных стандартов`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Берём первый стандарт или выбранный пользователем
+      const selectedStandard = params.standard || standards[0].name;
+      const standardData = standards.find(s => s.name === selectedStandard);
+
+      if (!standardData) {
+        return {
+          success: false,
+          error: `Стандарт ${selectedStandard} не найден для размера ${sizeStr}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      const coefficient = standardData.coefficient;
+      const steelDensity = 7.85; // фиксированная плотность
+
+      // Вес 1 метра (кг) = coefficient × steelDensity
+      weightPerMeter = coefficient * steelDensity;
+    } else if (metal.formula === 'sheet_pv_galv') {
+      // ✅ ЛИСТ ПВ ОЦИНК. - стандарты + оцинковка в долях
+      // Формула: Вес (т) = coefficient × (1 + zincCoef) × метры × 7.85 / 1000
+      const sizeStr = String(params.size);
+      const standards = metal.sizeStandards?.[sizeStr];
+
+      if (!standards || standards.length === 0) {
+        return {
+          success: false,
+          error: `Для размера ${sizeStr} листа ПВ оцинк. нет доступных стандартов`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Берём первый стандарт или выбранный пользователем
+      const selectedStandard = params.standard || standards[0].name;
+      const standardData = standards.find(s => s.name === selectedStandard);
+
+      if (!standardData) {
+        return {
+          success: false,
+          error: `Стандарт ${selectedStandard} не найден`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Оцинковка в долях (0.021, 0.036 и т.д.)
+      const zincOption = params.zincOption || 'нет';
+      const zincCoef = metal.zincCoefficients?.[zincOption] || 0;
+
+      const coefficient = standardData.coefficient;
+      const steelDensity = 7.85;
+
+      // Вес 1 метра (кг) = coefficient × (1 + zincCoef) × steelDensity
+      weightPerMeter = coefficient * (1 + zincCoef) * steelDensity;
+    } else if (metal.formula === 'sheet_checkered') {
+      // ✅ ЛИСТ РИФЛЕНЫЙ - рифление вместо марок стали
+      // Формула: Вес (т) = coefficient × кв.метры × riffleCoef / 1000
+      const sizeStr = String(params.size);
+      const sizeCoef = metal.weights?.[sizeStr];
+
+      if (!sizeCoef) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для листа рифленого`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Тип рифления
+      const riffleType = params.riffleType || 'чечевица';
+      const riffleCoef = metal.riffleCoefficients?.[riffleType];
+
+      if (!riffleCoef) {
+        return {
+          success: false,
+          error: `Тип рифления ${riffleType} не найден`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 кв.метра (кг) = sizeCoef × riffleCoef
+      weightPerMeter = sizeCoef * riffleCoef;
+    } else if (metal.weights && metal.steelCoefficients) {
+      // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
+      // Формула: Вес (т) = calc_koef1 × метры × stal_koef / 1000
+      // Вес 1 метра (кг) = calc_koef1 × stal_koef
+
+      steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
+
+      const sizeCoef = metal.weights[String(params.size)];
+      const steelCoef = metal.steelCoefficients[steelType];
+
+      if (!sizeCoef) {
+        return {
+          success: false,
+          error: `Размер '${params.size}' не найден для металла '${metal.name}'`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!steelCoef) {
+        return {
+          success: false,
+          error: `Марка стали '${steelType}' не найдена в базе данных для '${metal.name}'`,
+          metalType: params.metalType,
+          size: params.size,
+          steelType: steelType
+        };
+      }
+
+      // Вес 1 метра/кв.метра (в кг) = коэф_размера × коэф_стали
       weightPerMeter = sizeCoef * steelCoef;
     } else {
       // Для всех остальных металлов используем стандартную логику
@@ -159,6 +290,15 @@ function calculateMetal(params, metalDatabase) {
       // Рассчитываем вес в кг, затем конвертируем в тонны
       const weightInKg = weightPerMeter * length;
       weight = weightInKg / 1000;
+    } else if (params.area) {
+      // Дано: площадь (для листов рифленых) → найти вес
+      // weightPerMeter здесь = вес 1 кв.метра в кг
+      const area = params.area;
+      const weightInKg = weightPerMeter * area;
+      weight = weightInKg / 1000;
+      // Для листов длина = площадь, штуки не применимы
+      length = area;
+      pieces = null;
     }
 
     // ✅ ОПРЕДЕЛИТЬ ЧТО БЫЛО ЗАПРОШЕНО
@@ -175,6 +315,10 @@ function calculateMetal(params, metalDatabase) {
       requested.value = params.pieces;
       requested.unit = 'pieces';
       requested.label = `${params.pieces} шт`;
+    } else if (params.area) {
+      requested.value = params.area;
+      requested.unit = 'area';
+      requested.label = `${params.area} м²`;
     }
 
     // ✅ РАССЧИТАТЬ РАЗНИЦУ (только если было округление)
