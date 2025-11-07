@@ -348,7 +348,7 @@ function calculateMetal(params, metalDatabase) {
       success: true,
       metalType: metal.name,
       size: params.size,
-      gost: metal.gost || 'Не указан',
+      gost: metal.gosts?.all || metal.gost || 'Не указан',
       category: metal.category || 'Не указана',
 
       // ✅ Запрошенные значения

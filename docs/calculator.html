@@ -531,7 +531,7 @@
       const gostText = document.getElementById('gost-text');
       const categoryText = document.getElementById('category-text');
 
-      gostText.textContent = metal.gost || 'Не указан';
+      gostText.textContent = metal.gosts?.all || metal.gost || 'Не указан';
       categoryText.textContent = metal.category || 'Не указана';
       metalInfo.classList.remove('hidden');
 

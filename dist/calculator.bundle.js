@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-07T12:42:07.028Z
+// Собрано: 2025-11-07T13:59:34.083Z
 // ==========================================
 
 // src/formulas.js
@@ -584,7 +584,7 @@ function calculateMetal(params, metalDatabase) {
       success: true,
       metalType: metal.name,
       size: params.size,
-      gost: metal.gost || 'Не указан',
+      gost: metal.gosts?.all || metal.gost || 'Не указан',
       category: metal.category || 'Не указана',
 
       // ✅ Запрошенные значения

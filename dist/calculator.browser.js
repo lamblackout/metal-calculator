@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-07T12:42:07.029Z
+// Собрано: 2025-11-07T13:59:34.084Z
 // ==========================================
 
 (function(window) {
@@ -587,7 +587,7 @@ function calculateMetal(params, metalDatabase) {
       success: true,
       metalType: metal.name,
       size: params.size,
-      gost: metal.gost || 'Не указан',
+      gost: metal.gosts?.all || metal.gost || 'Не указан',
       category: metal.category || 'Не указана',
 
       // ✅ Запрошенные значения
