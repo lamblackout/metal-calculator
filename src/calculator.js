@@ -277,44 +277,59 @@ function calculateMetal(params, metalDatabase) {
 
       if (isLinearType) {
         // ✅ ЛИНЕЙНЫЙ ТИП: метры / длина_1_шт
-        length = calculated;  // Это метры
+        length = calculated;  // Это метры (ДО округления)
 
         // Рассчитать количество штук ТОЛЬКО если есть lengthSheet
         if (params.lengthSheet && params.lengthSheet > 0) {
           pieces = Math.ceil(length / params.lengthSheet);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать метры и тонны под округлённые штуки
+          length = pieces * params.lengthSheet;
+          console.log(`📐 Округление (линейный): ${calculated.toFixed(2)} м → ${pieces} шт × ${params.lengthSheet} м = ${length.toFixed(2)} м`);
         } else if (standardLength) {
           // Используем стандартную длину если нет lengthSheet
           pieces = Math.ceil(length / standardLength);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать метры и тонны
+          length = pieces * standardLength;
+          console.log(`📐 Округление (линейный, станд.): ${calculated.toFixed(2)} м → ${pieces} шт × ${standardLength} м = ${length.toFixed(2)} м`);
         }
         // Если нет ни lengthSheet ни standardLength - pieces остается null
       } else {
         // ✅ ПЛОЩАДНОЙ ТИП: кв.метры / (ширина × длина)
-        length = calculated;  // Это кв.метры
+        length = calculated;  // Это кв.метры (ДО округления)
 
         // Рассчитать количество штук ТОЛЬКО если есть width И lengthSheet
         if (params.width && params.width > 0 &&
             params.lengthSheet && params.lengthSheet > 0) {
           const areaPerPiece = params.width * params.lengthSheet;
           pieces = Math.ceil(length / areaPerPiece);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать площадь и тонны под округлённые штуки
+          length = pieces * areaPerPiece;
+          console.log(`📐 Округление (площадной): ${calculated.toFixed(2)} м² → ${pieces} шт × ${areaPerPiece.toFixed(2)} м² = ${length.toFixed(2)} м²`);
         }
         // Если нет width или lengthSheet - pieces остается null
       }
 
-      // Пересчитываем вес (без округления длины/площади)
+      // Пересчитываем вес ИЗ ОКРУГЛЁННОЙ длины/площади
       const actualWeightKg = weightPerMeter * length;
       weight = actualWeightKg / 1000;
 
     } else if (params.length) {
       // Дано: длина/площадь → найти вес и штуки
       const requestedLength = params.length;
-      length = requestedLength;
+      length = requestedLength;  // ДО округления
 
       if (isLinearType) {
         // ✅ ЛИНЕЙНЫЙ ТИП
         if (params.lengthSheet && params.lengthSheet > 0) {
           pieces = Math.ceil(length / params.lengthSheet);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать метры и тонны
+          length = pieces * params.lengthSheet;
+          console.log(`📐 Округление (линейный, from length): ${requestedLength.toFixed(2)} м → ${pieces} шт × ${params.lengthSheet} м = ${length.toFixed(2)} м`);
         } else if (standardLength) {
           pieces = Math.ceil(length / standardLength);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать метры и тонны
+          length = pieces * standardLength;
+          console.log(`📐 Округление (линейный, станд., from length): ${requestedLength.toFixed(2)} м → ${pieces} шт × ${standardLength} м = ${length.toFixed(2)} м`);
         }
       } else {
         // ✅ ПЛОЩАДНОЙ ТИП
@@ -322,9 +337,13 @@ function calculateMetal(params, metalDatabase) {
             params.lengthSheet && params.lengthSheet > 0) {
           const areaPerPiece = params.width * params.lengthSheet;
           pieces = Math.ceil(length / areaPerPiece);
+          // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать площадь и тонны
+          length = pieces * areaPerPiece;
+          console.log(`📐 Округление (площадной, from length): ${requestedLength.toFixed(2)} м² → ${pieces} шт × ${areaPerPiece.toFixed(2)} м² = ${length.toFixed(2)} м²`);
         }
       }
 
+      // Пересчитываем вес ИЗ ОКРУГЛЁННОЙ длины/площади
       const actualWeightKg = weightPerMeter * length;
       weight = actualWeightKg / 1000;
 
@@ -354,19 +373,24 @@ function calculateMetal(params, metalDatabase) {
     } else if (params.area) {
       // Дано: площадь (специальный случай) → найти вес
       // weightPerMeter здесь = вес 1 кв.метра в кг
-      const area = params.area;
-      const weightInKg = weightPerMeter * area;
-      weight = weightInKg / 1000;
-      length = area;
+      const requestedArea = params.area;
+      length = requestedArea;  // ДО округления
 
       // Рассчитать pieces для площадного типа
       if (!isLinearType && params.width && params.width > 0 &&
           params.lengthSheet && params.lengthSheet > 0) {
         const areaPerPiece = params.width * params.lengthSheet;
-        pieces = Math.ceil(area / areaPerPiece);
+        pieces = Math.ceil(length / areaPerPiece);
+        // ⚠️ ОКРУГЛИЛИ ШТУКИ → пересчитать площадь и тонны
+        length = pieces * areaPerPiece;
+        console.log(`📐 Округление (площадной, from area): ${requestedArea.toFixed(2)} м² → ${pieces} шт × ${areaPerPiece.toFixed(2)} м² = ${length.toFixed(2)} м²`);
       } else {
         pieces = null;
       }
+
+      // Пересчитываем вес ИЗ ОКРУГЛЁННОЙ площади
+      const weightInKg = weightPerMeter * length;
+      weight = weightInKg / 1000;
     }
 
     // ✅ ОПРЕДЕЛИТЬ ЧТО БЫЛО ЗАПРОШЕНО
