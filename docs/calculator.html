@@ -1025,6 +1025,11 @@
           option.textContent = riffle + coef;
           riffleTypeSelect.appendChild(option);
         });
+        // Автоматически выбрать первый вариант рифления
+        if (metal.riffleTypes.length > 0) {
+          riffleTypeSelect.value = metal.riffleTypes[0];
+          console.log(`  🎯 Автоматически выбрано рифление: ${metal.riffleTypes[0]}`);
+        }
         fieldRiffleType.classList.remove('hidden');
         hasAnyField = true;
         console.log(`  ✅ Показано поле "Рифление" (${metal.riffleTypes.length} вариантов)`);
@@ -1044,6 +1049,11 @@
           option.textContent = zinc + coef;
           zincOptionSelect.appendChild(option);
         });
+        // Автоматически выбрать первый вариант оцинковки
+        if (metal.zincOptions.length > 0) {
+          zincOptionSelect.value = metal.zincOptions[0];
+          console.log(`  🎯 Автоматически выбрана оцинковка: ${metal.zincOptions[0]}`);
+        }
         fieldZincOption.classList.remove('hidden');
         hasAnyField = true;
         console.log(`  ✅ Показано поле "Оцинковка" (${metal.zincOptions.length} вариантов)`);
@@ -1216,6 +1226,13 @@
             option.textContent = standard.name;
             standardSelect.appendChild(option);
           });
+
+          // Автоматически выбрать первый стандарт
+          if (metal.sizeStandards[sizeValue].length > 0) {
+            const firstStandard = metal.sizeStandards[sizeValue][0].name;
+            standardSelect.value = firstStandard;
+            console.log(`🎯 Автоматически выбран стандарт: ${firstStandard}`);
+          }
 
           console.log(`📐 Загружено ${metal.sizeStandards[sizeValue].length} стандартов для размера ${sizeValue}`);
         }
