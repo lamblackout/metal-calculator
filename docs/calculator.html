@@ -1123,18 +1123,34 @@
 
     // Поле "Площадь" удалено - площадь считается автоматически из ширины × длины
 
-    // При изменении ширины ОДНОГО листа - пересчитать ТОЛЬКО количество штук
+    // При изменении ширины ОДНОГО листа - пересчитать с учётом округления
     widthInput.addEventListener('input', (e) => {
       showSheetArea();  // Показать площадь 1 листа для информации
-      recalculatePiecesOnly();  // Пересчитать ТОЛЬКО количество штук
-      // НЕ вызываем recalculate - не меняем тонны!
+
+      // Если есть вес, длина или штуки - пересчитать с новыми размерами листа
+      // Backend пересчитает с округлением и обновит тонны
+      if (weightInput.value) {
+        debounceRecalculate('weight');  // Пересчитать С округлением штук и тонн
+      } else if (lengthInput.value) {
+        debounceRecalculate('length');
+      } else if (piecesInput.value) {
+        debounceRecalculate('pieces');
+      }
     });
 
-    // При изменении длины ОДНОГО листа - пересчитать ТОЛЬКО количество штук
+    // При изменении длины ОДНОГО листа - пересчитать с учётом округления
     lengthSheetInput.addEventListener('input', (e) => {
       showSheetArea();  // Показать площадь 1 листа для информации
-      recalculatePiecesOnly();  // Пересчитать ТОЛЬКО количество штук
-      // НЕ вызываем recalculate - не меняем тонны!
+
+      // Если есть вес, длина или штуки - пересчитать с новыми размерами листа
+      // Backend пересчитает с округлением и обновит тонны
+      if (weightInput.value) {
+        debounceRecalculate('weight');  // Пересчитать С округлением штук и тонн
+      } else if (lengthInput.value) {
+        debounceRecalculate('length');
+      } else if (piecesInput.value) {
+        debounceRecalculate('pieces');
+      }
     });
 
     // При изменении металла или размера - очистить поля
