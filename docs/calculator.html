@@ -365,23 +365,7 @@
 
         <!-- ===== ПОЛЯ ДЛЯ ЛИСТОВЫХ МЕТАЛЛОВ (ОТДЕЛЬНЫЕ БЛОКИ) ===== -->
 
-        <!-- Поле: Площадь -->
-        <div class="form-row" id="field-area" style="display: none;">
-          <div class="form-group flex-1">
-            <label for="input-area">
-              📦 Площадь
-              <span class="field-hint">кв. метры</span>
-            </label>
-            <input
-              type="number"
-              id="input-area"
-              class="form-control"
-              placeholder="например: 10"
-              step="0.01"
-              min="0"
-            >
-          </div>
-        </div>
+        <!-- Поле "Площадь" УДАЛЕНО - площадь считается автоматически для расчёта штук из ширины × длины -->
 
         <!-- Поле: Ширина -->
         <div class="form-row" id="field-width" style="display: none;">
@@ -660,7 +644,7 @@
     const weightInput = document.getElementById('input-weight');
     const lengthInput = document.getElementById('input-length');
     const piecesInput = document.getElementById('input-pieces');
-    const areaInput = document.getElementById('input-area');
+    const areaInput = null;  // Поле площади УДАЛЕНО - площадь считается автоматически
     const widthInput = document.getElementById('input-width');
     const lengthSheetInput = document.getElementById('input-length-sheet');
 
@@ -705,8 +689,9 @@
         // Для линейных типов берём МЕТРЫ из поля "Длина"
         totalValue = parseFloat(lengthInput.value);
       } else {
-        // Для площадных типов берём КВ.МЕТРЫ из поля "Площадь"
-        totalValue = parseFloat(areaInput.value);
+        // Для площадных типов берём КВ.МЕТРЫ из поля "Длина"
+        // (Backend записывает площадь в это поле для площадных типов)
+        totalValue = parseFloat(lengthInput.value);
       }
 
       if (!totalValue || totalValue <= 0) {
@@ -742,15 +727,8 @@
     }
 
     /**
-     * Очистка ширины/длины при прямом вводе площади
+     * Функция clearWidthLength() УДАЛЕНА - поле площади больше нет
      */
-    function clearWidthLength() {
-      if (areaInput.value) {
-        widthInput.value = '';
-        lengthSheetInput.value = '';
-        document.getElementById('calculated-area-box').style.display = 'none';
-      }
-    }
 
     /**
      * Пересчитать все поля от одного источника
@@ -779,16 +757,15 @@
           inputValue = parseFloat(lengthInput.value);
         } else if (sourceField === 'pieces') {
           inputValue = parseInt(piecesInput.value);
-        } else if (sourceField === 'area') {
-          inputValue = parseFloat(areaInput.value);
         }
+        // sourceField === 'area' удалён - поля площади больше нет
 
         // Если поле пустое или 0 - очистить остальные
         if (!inputValue || inputValue <= 0) {
           if (sourceField !== 'weight') weightInput.value = '';
           if (sourceField !== 'length') lengthInput.value = '';
           if (sourceField !== 'pieces') piecesInput.value = '';
-          if (sourceField !== 'area') areaInput.value = '';
+          // areaInput удалён
           hideResult();
           isCalculating = false;
           return;
@@ -815,9 +792,8 @@
           params.length = inputValue;
         } else if (sourceField === 'pieces') {
           params.pieces = inputValue;
-        } else if (sourceField === 'area') {
-          params.area = inputValue;
         }
+        // params.area удалён - поля площади больше нет
 
         // Если введены ширина и длина листа - добавить их в params
         const width = parseFloat(widthInput.value);
@@ -1069,16 +1045,14 @@
 
       console.log('🔧 updateSheetFieldsVisibility вызвана для типа:', metalType);
 
-      // Получить элементы ОТДЕЛЬНЫХ полей
-      const fieldArea = document.getElementById('field-area');
+      // Получить элементы полей (поле площади удалено - она считается автоматически)
       const fieldWidth = document.getElementById('field-width');
       const fieldLengthSheet = document.getElementById('field-length-sheet');
       const calculatedBox = document.getElementById('calculated-area-box');
 
       // Проверка существования элементов
-      if (!fieldArea || !fieldWidth || !fieldLengthSheet) {
+      if (!fieldWidth || !fieldLengthSheet) {
         console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Не найдены элементы листовых полей!');
-        console.error('  field-area:', fieldArea ? '✅' : '❌');
         console.error('  field-width:', fieldWidth ? '✅' : '❌');
         console.error('  field-length-sheet:', fieldLengthSheet ? '✅' : '❌');
         return;
@@ -1086,8 +1060,8 @@
 
       // ===== ОПРЕДЕЛЯЕМ ТИПЫ МЕТАЛЛОВ =====
 
-      // Листы и ленты с площадью (нужны все 3 поля)
-      const needsAllSheetFields = (
+      // Листы и ленты (нужны ширина и длина листа для расчёта штук)
+      const needsSheetFields = (
         metalType === 'strip_tape' ||      // Лента/штрипс
         metalType === 'strip_tape_painted' || // Лента/штрипс окраш.
         metalType === 'strip_tape_galv' || // Лента/штрипс оц.
@@ -1096,40 +1070,20 @@
         metalType === 'sheet_galv' ||      // Лист/рулон оцинк.
         metalType === 'sheet_painted' ||   // Лист/рулон окраш.
         metalType === 'sheet_pv' ||        // Лист ПВ
-        metalType === 'sheet_pv_galv'      // Лист ПВ оцинк.
+        metalType === 'sheet_pv_galv' ||   // Лист ПВ оцинк.
+        metalType === 'sheet_checkered'    // Лист рифленый
       );
-
-      // Лист рифленый (только площадь, без ширины/длины)
-      const needsOnlyArea = metalType === 'sheet_checkered';
 
       // ===== ПОКАЗАТЬ ИЛИ СКРЫТЬ ПОЛЯ =====
 
-      if (needsAllSheetFields) {
-        console.log('✅ Показываем ВСЕ листовые поля для', metalType);
+      if (needsSheetFields) {
+        console.log('✅ Показываем поля ширины и длины для', metalType);
 
-        // Показать все три поля
-        fieldArea.style.display = 'block';
+        // Показать ширину и длину листа
         fieldWidth.style.display = 'block';
         fieldLengthSheet.style.display = 'block';
 
         // Очистить значения при смене типа
-        areaInput.value = '';
-        widthInput.value = '';
-        lengthSheetInput.value = '';
-
-        // Скрыть блок с автоматической площадью
-        if (calculatedBox) calculatedBox.style.display = 'none';
-
-      } else if (needsOnlyArea) {
-        console.log('✅ Показываем ТОЛЬКО площадь для', metalType);
-
-        // Показать только площадь
-        fieldArea.style.display = 'block';
-        fieldWidth.style.display = 'none';
-        fieldLengthSheet.style.display = 'none';
-
-        // Очистить значения
-        areaInput.value = '';
         widthInput.value = '';
         lengthSheetInput.value = '';
 
@@ -1137,10 +1091,9 @@
         if (calculatedBox) calculatedBox.style.display = 'none';
 
       } else {
-        console.log('❌ Скрываем все листовые поля для', metalType);
+        console.log('❌ Скрываем листовые поля для', metalType);
 
-        // Скрыть все три поля
-        fieldArea.style.display = 'none';
+        // Скрыть ширину и длину
         fieldWidth.style.display = 'none';
         fieldLengthSheet.style.display = 'none';
 
@@ -1168,11 +1121,7 @@
       debounceRecalculate('pieces');
     });
 
-    // При изменении площади
-    areaInput.addEventListener('input', (e) => {
-      clearWidthLength();  // Очистить ширину/длину
-      debounceRecalculate('area');
-    });
+    // Поле "Площадь" удалено - площадь считается автоматически из ширины × длины
 
     // При изменении ширины ОДНОГО листа - пересчитать ТОЛЬКО количество штук
     widthInput.addEventListener('input', (e) => {
@@ -1193,7 +1142,7 @@
       weightInput.value = '';
       lengthInput.value = '';
       piecesInput.value = '';
-      areaInput.value = '';
+      // areaInput удалён
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
@@ -1207,7 +1156,7 @@
       weightInput.value = '';
       lengthInput.value = '';
       piecesInput.value = '';
-      areaInput.value = '';
+      // areaInput удалён
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
@@ -1314,9 +1263,8 @@
           recalculateFields('length');
         } else if (piecesInput.value) {
           recalculateFields('pieces');
-        } else if (areaInput.value) {
-          recalculateFields('area');
         }
+        // areaInput удалён
       });
     }
 
