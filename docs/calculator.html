@@ -875,14 +875,37 @@
 
         if (result.success) {
           // Заполнить остальные поля (кроме источника)
-          if (sourceField !== 'weight' && result.actual.weight !== null) {
-            weightInput.value = result.actual.weight.toFixed(3);
-            console.log('✅ Weight заполнен:', weightInput.value);
+          // ИСКЛЮЧЕНИЕ: Если вес изменился из-за округления штук - обновить поле!
+          if (result.actual.weight !== null) {
+            const requestedWeight = parseFloat(weightInput.value);
+            const calculatedWeight = result.actual.weight;
+            const weightChanged = Math.abs(calculatedWeight - requestedWeight) > 0.001;
+
+            // Обновляем вес, если:
+            // 1. sourceField !== 'weight' (обычный случай) ИЛИ
+            // 2. Вес изменился из-за округления штук
+            if (sourceField !== 'weight' || weightChanged) {
+              weightInput.value = result.actual.weight.toFixed(3);
+              if (weightChanged && sourceField === 'weight') {
+                console.log(`⚠️ Вес изменился из-за округления: ${requestedWeight.toFixed(3)} → ${calculatedWeight.toFixed(3)}`);
+              }
+              console.log('✅ Weight заполнен:', weightInput.value);
+            }
           }
 
-          if (sourceField !== 'length' && result.actual.length !== null) {
-            lengthInput.value = result.actual.length.toFixed(2);
-            console.log('✅ Length заполнен:', lengthInput.value);
+          // Аналогично для длины/площади - обновляем если изменилась из-за округления
+          if (result.actual.length !== null) {
+            const requestedLength = parseFloat(lengthInput.value);
+            const calculatedLength = result.actual.length;
+            const lengthChanged = Math.abs(calculatedLength - requestedLength) > 0.01;
+
+            if (sourceField !== 'length' || lengthChanged) {
+              lengthInput.value = result.actual.length.toFixed(2);
+              if (lengthChanged && sourceField === 'length') {
+                console.log(`⚠️ Длина/площадь изменилась из-за округления: ${requestedLength.toFixed(2)} → ${calculatedLength.toFixed(2)}`);
+              }
+              console.log('✅ Length заполнен:', lengthInput.value);
+            }
           }
 
           if (sourceField !== 'pieces' && result.actual.pieces !== null) {
