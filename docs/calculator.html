@@ -667,17 +667,75 @@
     /**
      * Автоматический расчёт площади из ширины × длины
      */
-    function calculateArea() {
+    /**
+     * Показать площадь ОДНОГО листа (НЕ общую площадь!)
+     * Это только для информации пользователю
+     */
+    function showSheetArea() {
       const width = parseFloat(widthInput.value);
       const length = parseFloat(lengthSheetInput.value);
 
       if (width && length && width > 0 && length > 0) {
-        const area = width * length;
-        document.getElementById('calculated-area-value').textContent = area.toFixed(2);
-        areaInput.value = area.toFixed(2);
+        const areaPerPiece = width * length;
+        document.getElementById('calculated-area-value').textContent = areaPerPiece.toFixed(2);
         document.getElementById('calculated-area-box').style.display = 'block';
       } else {
         document.getElementById('calculated-area-box').style.display = 'none';
+      }
+    }
+
+    /**
+     * Пересчитать ТОЛЬКО количество штук
+     * Вызывается при изменении ширины/длины ОДНОГО листа
+     * НЕ меняет тонны, метры или площадь!
+     */
+    function recalculatePiecesOnly() {
+      const metalType = document.getElementById('metal-type').value;
+      if (!metalType) return;
+
+      // Линейные типы используют метры, площадные - кв.метры
+      const linearTypes = ['circle', 'circle_galv', 'sheet_pv', 'sheet_pv_galv', 'rope'];
+      const isLinearType = linearTypes.includes(metalType);
+
+      let totalValue = null;  // Общие метры или кв.метры
+
+      if (isLinearType) {
+        // Для линейных типов берём МЕТРЫ из поля "Длина"
+        totalValue = parseFloat(lengthInput.value);
+      } else {
+        // Для площадных типов берём КВ.МЕТРЫ из поля "Площадь"
+        totalValue = parseFloat(areaInput.value);
+      }
+
+      if (!totalValue || totalValue <= 0) {
+        // Нет данных для расчёта
+        piecesInput.value = '';
+        return;
+      }
+
+      // Получить размеры одного листа
+      const width = parseFloat(widthInput.value);
+      const lengthSheet = parseFloat(lengthSheetInput.value);
+
+      if (isLinearType) {
+        // ЛИНЕЙНЫЙ ТИП: pieces = метры / длина_1_шт
+        if (lengthSheet && lengthSheet > 0) {
+          const pieces = Math.ceil(totalValue / lengthSheet);
+          piecesInput.value = pieces;
+          console.log(`📊 Пересчитаны штуки (линейный): ${totalValue} м / ${lengthSheet} м = ${pieces} шт`);
+        } else {
+          piecesInput.value = '';
+        }
+      } else {
+        // ПЛОЩАДНОЙ ТИП: pieces = кв.метры / (ширина × длина)
+        if (width && width > 0 && lengthSheet && lengthSheet > 0) {
+          const areaPerPiece = width * lengthSheet;
+          const pieces = Math.ceil(totalValue / areaPerPiece);
+          piecesInput.value = pieces;
+          console.log(`📊 Пересчитаны штуки (площадной): ${totalValue} м² / (${width} × ${lengthSheet}) = ${pieces} шт`);
+        } else {
+          piecesInput.value = '';
+        }
       }
     }
 
@@ -858,6 +916,14 @@
 
           // Показать результат
           showResult(result);
+
+          // Пересчитать штуки только если backend их НЕ рассчитал
+          // (например, если пользователь ввёл ширину/длину после расчёта тонн)
+          if (sourceField !== 'pieces' && result.actual.pieces === null) {
+            setTimeout(() => {
+              recalculatePiecesOnly();
+            }, 0);
+          }
 
         } else {
           // Ошибка расчёта
@@ -1106,34 +1172,18 @@
       debounceRecalculate('area');
     });
 
-    // При изменении ширины - пересчитать площадь И количество штук
+    // При изменении ширины ОДНОГО листа - пересчитать ТОЛЬКО количество штук
     widthInput.addEventListener('input', (e) => {
-      calculateArea();
-      // Пересчитать от заполненного поля (area, weight, length, pieces)
-      if (areaInput.value) {
-        debounceRecalculate('area');
-      } else if (weightInput.value) {
-        debounceRecalculate('weight');
-      } else if (lengthInput.value) {
-        debounceRecalculate('length');
-      } else if (piecesInput.value) {
-        debounceRecalculate('pieces');
-      }
+      showSheetArea();  // Показать площадь 1 листа для информации
+      recalculatePiecesOnly();  // Пересчитать ТОЛЬКО количество штук
+      // НЕ вызываем recalculate - не меняем тонны!
     });
 
-    // При изменении длины листа - пересчитать площадь И количество штук
+    // При изменении длины ОДНОГО листа - пересчитать ТОЛЬКО количество штук
     lengthSheetInput.addEventListener('input', (e) => {
-      calculateArea();
-      // Пересчитать от заполненного поля (area, weight, length, pieces)
-      if (areaInput.value) {
-        debounceRecalculate('area');
-      } else if (weightInput.value) {
-        debounceRecalculate('weight');
-      } else if (lengthInput.value) {
-        debounceRecalculate('length');
-      } else if (piecesInput.value) {
-        debounceRecalculate('pieces');
-      }
+      showSheetArea();  // Показать площадь 1 листа для информации
+      recalculatePiecesOnly();  // Пересчитать ТОЛЬКО количество штук
+      // НЕ вызываем recalculate - не меняем тонны!
     });
 
     // При изменении металла или размера - очистить поля
