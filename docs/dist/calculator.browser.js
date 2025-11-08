@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-08T15:40:56.295Z
+// Собрано: 2025-11-08T20:10:15.394Z
 // ==========================================
 
 (function(window) {
@@ -498,7 +498,9 @@ function calculateMetal(params, metalDatabase) {
 
     // ✅ ОПРЕДЕЛИТЬ ТИП: ЛИНЕЙНЫЙ ИЛИ ПЛОЩАДНОЙ
     // Линейные типы используют МЕТРЫ, площадные используют КВ.МЕТРЫ
-    const linearTypes = ['circle', 'circle_galv', 'sheet_pv', 'sheet_pv_galv'];
+    // ТОЛЬКО Круг и Канат - линейные типы (вес на погонный метр)
+    // Лист ПВ - ПЛОЩАДНОЙ тип (имеет ширину и длину листа)
+    const linearTypes = ['circle', 'circle_galv', 'rope'];
     const isLinearType = linearTypes.includes(params.metalType);
 
     // Выполнить расчет в зависимости от входных параметров

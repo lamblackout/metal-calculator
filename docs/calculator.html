@@ -694,7 +694,9 @@
       if (!metalType) return;
 
       // Линейные типы используют метры, площадные - кв.метры
-      const linearTypes = ['circle', 'circle_galv', 'sheet_pv', 'sheet_pv_galv', 'rope'];
+      // ТОЛЬКО Круг и Канат - линейные типы (вес на погонный метр)
+      // Лист ПВ - ПЛОЩАДНОЙ тип (имеет ширину и длину листа)
+      const linearTypes = ['circle', 'circle_galv', 'rope'];
       const isLinearType = linearTypes.includes(metalType);
 
       let totalValue = null;  // Общие метры или кв.метры
