@@ -257,55 +257,114 @@ function calculateMetal(params, metalDatabase) {
     // Получить стандартную длину
     const standardLength = getStandardLength(metal);
 
+    // ✅ ОПРЕДЕЛИТЬ ТИП: ЛИНЕЙНЫЙ ИЛИ ПЛОЩАДНОЙ
+    // Линейные типы используют МЕТРЫ, площадные используют КВ.МЕТРЫ
+    const linearTypes = ['circle', 'circle_galv', 'sheet_pv', 'sheet_pv_galv'];
+    const isLinearType = linearTypes.includes(params.metalType);
+
     // Выполнить расчет в зависимости от входных параметров
     let weight = null;
-    let length = null;
+    let length = null;  // Для линейных: метры, для площадных: кв.метры
     let pieces = null;
 
     if (params.weight) {
-      // Дано: вес (в тоннах) → найти длину и штуки
-      const requestedWeight = params.weight;  // Сохраняем запрошенный вес
+      // Дано: вес (в тоннах) → найти длину/площадь и штуки
+      const requestedWeight = params.weight;
       const weightInKg = requestedWeight * 1000;
-      const calculatedLength = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
+      const calculated = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
 
-      // ✅ Округляем штуки (используем 1м по умолчанию если нет standardLength)
-      const pieceLength = standardLength || 1;
-      pieces = formulas.calculatePiecesFromLength(calculatedLength, pieceLength);
+      if (isLinearType) {
+        // ✅ ЛИНЕЙНЫЙ ТИП: метры / длина_1_шт
+        length = calculated;  // Это метры
 
-      // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
-      length = pieces * pieceLength;  // Фактическая длина
+        // Рассчитать количество штук ТОЛЬКО если есть lengthSheet
+        if (params.lengthSheet && params.lengthSheet > 0) {
+          pieces = Math.ceil(length / params.lengthSheet);
+        } else if (standardLength) {
+          // Используем стандартную длину если нет lengthSheet
+          pieces = Math.ceil(length / standardLength);
+        }
+        // Если нет ни lengthSheet ни standardLength - pieces остается null
+      } else {
+        // ✅ ПЛОЩАДНОЙ ТИП: кв.метры / (ширина × длина)
+        length = calculated;  // Это кв.метры
+
+        // Рассчитать количество штук ТОЛЬКО если есть width И lengthSheet
+        if (params.width && params.width > 0 &&
+            params.lengthSheet && params.lengthSheet > 0) {
+          const areaPerPiece = params.width * params.lengthSheet;
+          pieces = Math.ceil(length / areaPerPiece);
+        }
+        // Если нет width или lengthSheet - pieces остается null
+      }
+
+      // Пересчитываем вес (без округления длины/площади)
       const actualWeightKg = weightPerMeter * length;
-      weight = actualWeightKg / 1000;  // Фактический вес
+      weight = actualWeightKg / 1000;
+
     } else if (params.length) {
-      // Дано: длина → найти вес и штуки
-      const requestedLength = params.length;  // Сохраняем запрошенную длину
+      // Дано: длина/площадь → найти вес и штуки
+      const requestedLength = params.length;
+      length = requestedLength;
 
-      // ✅ Округляем штуки (используем 1м по умолчанию если нет standardLength)
-      const pieceLength = standardLength || 1;
-      pieces = formulas.calculatePiecesFromLength(requestedLength, pieceLength);
+      if (isLinearType) {
+        // ✅ ЛИНЕЙНЫЙ ТИП
+        if (params.lengthSheet && params.lengthSheet > 0) {
+          pieces = Math.ceil(length / params.lengthSheet);
+        } else if (standardLength) {
+          pieces = Math.ceil(length / standardLength);
+        }
+      } else {
+        // ✅ ПЛОЩАДНОЙ ТИП
+        if (params.width && params.width > 0 &&
+            params.lengthSheet && params.lengthSheet > 0) {
+          const areaPerPiece = params.width * params.lengthSheet;
+          pieces = Math.ceil(length / areaPerPiece);
+        }
+      }
 
-      // ✅ ПЕРЕСЧИТЫВАЕМ от округлённых штук
-      length = pieces * pieceLength;  // Фактическая длина
       const actualWeightKg = weightPerMeter * length;
-      weight = actualWeightKg / 1000;  // Фактический вес
+      weight = actualWeightKg / 1000;
+
     } else if (params.pieces) {
-      // Дано: штуки → найти длину и вес
+      // Дано: штуки → найти длину/площадь и вес
       pieces = params.pieces;
-      // ✅ ИСПРАВЛЕНИЕ: Если нет standardLength, используем 1 метр по умолчанию
-      const pieceLength = standardLength || 1; // По умолчанию 1 метр
-      length = pieces * pieceLength;
-      // Рассчитываем вес в кг, затем конвертируем в тонны
+
+      if (isLinearType) {
+        // ✅ ЛИНЕЙНЫЙ ТИП: метры = штуки × длина_1_шт
+        const pieceLength = params.lengthSheet || standardLength || 1;
+        length = pieces * pieceLength;
+      } else {
+        // ✅ ПЛОЩАДНОЙ ТИП: кв.метры = штуки × (ширина × длина)
+        if (params.width && params.width > 0 &&
+            params.lengthSheet && params.lengthSheet > 0) {
+          const areaPerPiece = params.width * params.lengthSheet;
+          length = pieces * areaPerPiece;
+        } else {
+          // Если нет размеров 1 штуки - используем 1 кв.м по умолчанию
+          length = pieces;
+        }
+      }
+
       const weightInKg = weightPerMeter * length;
       weight = weightInKg / 1000;
+
     } else if (params.area) {
-      // Дано: площадь (для листов рифленых) → найти вес
+      // Дано: площадь (специальный случай) → найти вес
       // weightPerMeter здесь = вес 1 кв.метра в кг
       const area = params.area;
       const weightInKg = weightPerMeter * area;
       weight = weightInKg / 1000;
-      // Для листов длина = площадь, штуки не применимы
       length = area;
-      pieces = null;
+
+      // Рассчитать pieces для площадного типа
+      if (!isLinearType && params.width && params.width > 0 &&
+          params.lengthSheet && params.lengthSheet > 0) {
+        const areaPerPiece = params.width * params.lengthSheet;
+        pieces = Math.ceil(area / areaPerPiece);
+      } else {
+        pieces = null;
+      }
     }
 
     // ✅ ОПРЕДЕЛИТЬ ЧТО БЫЛО ЗАПРОШЕНО

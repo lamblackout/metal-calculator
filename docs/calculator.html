@@ -1106,21 +1106,33 @@
       debounceRecalculate('area');
     });
 
-    // При изменении ширины - пересчитать площадь
+    // При изменении ширины - пересчитать площадь И количество штук
     widthInput.addEventListener('input', (e) => {
       calculateArea();
-      // Если area рассчиталась - запустить пересчёт
+      // Пересчитать от заполненного поля (area, weight, length, pieces)
       if (areaInput.value) {
         debounceRecalculate('area');
+      } else if (weightInput.value) {
+        debounceRecalculate('weight');
+      } else if (lengthInput.value) {
+        debounceRecalculate('length');
+      } else if (piecesInput.value) {
+        debounceRecalculate('pieces');
       }
     });
 
-    // При изменении длины листа - пересчитать площадь
+    // При изменении длины листа - пересчитать площадь И количество штук
     lengthSheetInput.addEventListener('input', (e) => {
       calculateArea();
-      // Если area рассчиталась - запустить пересчёт
+      // Пересчитать от заполненного поля (area, weight, length, pieces)
       if (areaInput.value) {
         debounceRecalculate('area');
+      } else if (weightInput.value) {
+        debounceRecalculate('weight');
+      } else if (lengthInput.value) {
+        debounceRecalculate('length');
+      } else if (piecesInput.value) {
+        debounceRecalculate('pieces');
       }
     });
 
@@ -1204,6 +1216,57 @@
         recalculateFields('pieces');
       }
     });
+
+    // При изменении стандарта (Лист ПВ) - пересчитать
+    const standardSelect = document.getElementById('standard-select');
+    if (standardSelect) {
+      standardSelect.addEventListener('change', () => {
+        console.log('🔄 Стандарт изменён, пересчитываю...');
+        if (weightInput.value) {
+          recalculateFields('weight');
+        } else if (lengthInput.value) {
+          recalculateFields('length');
+        } else if (piecesInput.value) {
+          recalculateFields('pieces');
+        } else if (areaInput.value) {
+          recalculateFields('area');
+        }
+      });
+    }
+
+    // При изменении типа рифления (Лист рифленый) - пересчитать
+    const riffleTypeSelect = document.getElementById('riffle-type-select');
+    if (riffleTypeSelect) {
+      riffleTypeSelect.addEventListener('change', () => {
+        console.log('🔄 Тип рифления изменён, пересчитываю...');
+        if (weightInput.value) {
+          recalculateFields('weight');
+        } else if (lengthInput.value) {
+          recalculateFields('length');
+        } else if (piecesInput.value) {
+          recalculateFields('pieces');
+        } else if (areaInput.value) {
+          recalculateFields('area');
+        }
+      });
+    }
+
+    // При изменении опции цинкования - пересчитать
+    const zincOptionSelect = document.getElementById('zinc-option-select');
+    if (zincOptionSelect) {
+      zincOptionSelect.addEventListener('change', () => {
+        console.log('🔄 Опция цинкования изменена, пересчитываю...');
+        if (weightInput.value) {
+          recalculateFields('weight');
+        } else if (lengthInput.value) {
+          recalculateFields('length');
+        } else if (piecesInput.value) {
+          recalculateFields('pieces');
+        } else if (areaInput.value) {
+          recalculateFields('area');
+        }
+      });
+    }
 
     // Функция скрытия результата
     function hideResult() {
