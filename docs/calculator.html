@@ -196,6 +196,48 @@
         </div>
       </div>
 
+      <!-- ===== НОВЫЙ БЛОК: ДИНАМИЧЕСКИЕ ПОЛЯ МАТЕРИАЛА ===== -->
+      <div id="material-properties-container" class="hidden space-y-4 border-2 border-green-200 rounded-lg p-4 bg-green-50">
+
+        <!-- Поле: Марка стали (для стандартных типов) -->
+        <div id="field-steel-type" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Марка стали</label>
+          <select id="steel-type-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Выберите марку стали --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Плотность стали влияет на расчёт веса</p>
+        </div>
+
+        <!-- Поле: Стандарт (ТУ) (для Листа ПВ) -->
+        <div id="field-standard" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Стандарт (ТУ)</label>
+          <select id="standard-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Сначала выберите размер --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Стандарт зависит от выбранного размера</p>
+        </div>
+
+        <!-- Поле: Рифление (для Листа рифленого) -->
+        <div id="field-riffle-type" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Тип рифления</label>
+          <select id="riffle-type-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Выберите тип рифления --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Тип рифления влияет на расчёт веса</p>
+        </div>
+
+        <!-- Поле: Оцинковка (для типов с оцинковкой) -->
+        <div id="field-zinc-option" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Оцинковка</label>
+          <select id="zinc-option-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Выберите вариант оцинковки --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Оцинковка добавляется к весу металла</p>
+        </div>
+
+      </div>
+      <!-- ===== КОНЕЦ БЛОКА: ДИНАМИЧЕСКИЕ ПОЛЯ МАТЕРИАЛА ===== -->
+
       <!-- Специальные поля для катанки -->
       <div id="katanka-fields" class="hidden space-y-4 border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
 
@@ -594,6 +636,9 @@
         steelGradeContainer.classList.add('hidden');
       }
 
+      // ===== НОВАЯ ЛОГИКА: ПОКАЗАТЬ/СКРЫТЬ ДИНАМИЧЕСКИЕ ПОЛЯ =====
+      updateMaterialPropertiesFields(metalType, metal);
+
       // Автоматический расчёт после выбора металла (если есть остальные данные)
       tryAutoCalculate();
     });
@@ -722,7 +767,48 @@
           params.lengthSheet = lengthSheet;
         }
 
-        // Если катанка - добавить steelType
+        // ===== НОВАЯ ЛОГИКА: ПЕРЕДАЧА ПАРАМЕТРОВ МАТЕРИАЛА =====
+
+        // 1. МАРКА СТАЛИ (для стандартных типов)
+        const typesWithSteel = ['circle', 'circle_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
+                                'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold'];
+        if (typesWithSteel.includes(metalType)) {
+          const steelTypeSelect = document.getElementById('steel-type-select');
+          if (steelTypeSelect && steelTypeSelect.value) {
+            params.steelType = steelTypeSelect.value;
+            console.log('  ✅ steelType:', params.steelType);
+          }
+        }
+
+        // 2. СТАНДАРТ (ТУ) (для Листа ПВ)
+        if (metalType === 'sheet_pv' || metalType === 'sheet_pv_galv') {
+          const standardSelect = document.getElementById('standard-select');
+          if (standardSelect && standardSelect.value) {
+            params.standard = standardSelect.value;
+            console.log('  ✅ standard:', params.standard);
+          }
+        }
+
+        // 3. РИФЛЕНИЕ (для Листа рифленого)
+        if (metalType === 'sheet_checkered') {
+          const riffleTypeSelect = document.getElementById('riffle-type-select');
+          if (riffleTypeSelect && riffleTypeSelect.value) {
+            params.riffleType = riffleTypeSelect.value;
+            console.log('  ✅ riffleType:', params.riffleType);
+          }
+        }
+
+        // 4. ОЦИНКОВКА (для типов с оцинковкой)
+        const typesWithZinc = ['strip_tape_painted', 'strip_tape_galv', 'sheet_painted', 'sheet_galv', 'sheet_pv_galv'];
+        if (typesWithZinc.includes(metalType)) {
+          const zincOptionSelect = document.getElementById('zinc-option-select');
+          if (zincOptionSelect && zincOptionSelect.value) {
+            params.zincOption = zincOptionSelect.value;
+            console.log('  ✅ zincOption:', params.zincOption);
+          }
+        }
+
+        // ===== СТАРАЯ ЛОГИКА (для обратной совместимости с катанкой) =====
         const katankaFields = document.getElementById('katanka-fields');
         if (metalType === 'wire_rod' && !katankaFields.classList.contains('hidden')) {
           const steelType = document.getElementById('steel-type');
@@ -731,7 +817,7 @@
           }
         }
 
-        // Оцинковка
+        // Старая оцинковка (checkbox) - для обратной совместимости
         const isGalvanized = document.getElementById('galvanized').checked;
         if (isGalvanized) {
           params.isGalvanized = true;
@@ -794,6 +880,116 @@
       debounceTimer = setTimeout(() => {
         recalculateFields(sourceField);
       }, delay);
+    }
+
+    /**
+     * НОВАЯ ФУНКЦИЯ: Показать/скрыть и заполнить динамические поля материала
+     * (Марка стали, Стандарт, Рифление, Оцинковка)
+     */
+    function updateMaterialPropertiesFields(metalType, metal) {
+      console.log('🎨 updateMaterialPropertiesFields вызвана для:', metalType);
+
+      // Получить контейнер и все поля
+      const container = document.getElementById('material-properties-container');
+      const fieldSteelType = document.getElementById('field-steel-type');
+      const fieldStandard = document.getElementById('field-standard');
+      const fieldRiffleType = document.getElementById('field-riffle-type');
+      const fieldZincOption = document.getElementById('field-zinc-option');
+
+      const steelTypeSelect = document.getElementById('steel-type-select');
+      const standardSelect = document.getElementById('standard-select');
+      const riffleTypeSelect = document.getElementById('riffle-type-select');
+      const zincOptionSelect = document.getElementById('zinc-option-select');
+
+      // 1. Скрыть все поля по умолчанию
+      fieldSteelType.classList.add('hidden');
+      fieldStandard.classList.add('hidden');
+      fieldRiffleType.classList.add('hidden');
+      fieldZincOption.classList.add('hidden');
+
+      let hasAnyField = false;
+
+      // 2. Определить какие поля показать для данного типа
+
+      // === МАРКА СТАЛИ (для стандартных типов) ===
+      const typesWithSteel = ['circle', 'circle_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
+                              'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold'];
+      if (typesWithSteel.includes(metalType) && metal.steelTypes && metal.steelTypes.length > 0) {
+        // Заполнить селект марками стали
+        steelTypeSelect.innerHTML = '<option value="">-- Выберите марку стали --</option>';
+        metal.steelTypes.forEach(steel => {
+          const option = document.createElement('option');
+          option.value = steel;
+          const density = metal.steelCoefficients && metal.steelCoefficients[steel]
+            ? ` (${metal.steelCoefficients[steel]} кг/дм³)`
+            : '';
+          option.textContent = steel + density;
+          steelTypeSelect.appendChild(option);
+        });
+        // Выбрать ст3 по умолчанию если есть
+        if (metal.steelTypes.includes('ст3')) {
+          steelTypeSelect.value = 'ст3';
+        }
+        fieldSteelType.classList.remove('hidden');
+        hasAnyField = true;
+        console.log(`  ✅ Показано поле "Марка стали" (${metal.steelTypes.length} вариантов)`);
+      }
+
+      // === СТАНДАРТ (ТУ) (для Листа ПВ) ===
+      if ((metalType === 'sheet_pv' || metalType === 'sheet_pv_galv') && metal.sizeStandards) {
+        // Стандарты загружаются динамически при выборе размера
+        // Сейчас просто показываем поле с подсказкой
+        standardSelect.innerHTML = '<option value="">-- Сначала выберите размер --</option>';
+        fieldStandard.classList.remove('hidden');
+        hasAnyField = true;
+        console.log('  ✅ Показано поле "Стандарт (ТУ)" (будет загружено при выборе размера)');
+      }
+
+      // === РИФЛЕНИЕ (для Листа рифленого) ===
+      if (metalType === 'sheet_checkered' && metal.riffleTypes && metal.riffleTypes.length > 0) {
+        // Заполнить селект типами рифления
+        riffleTypeSelect.innerHTML = '<option value="">-- Выберите тип рифления --</option>';
+        metal.riffleTypes.forEach(riffle => {
+          const option = document.createElement('option');
+          option.value = riffle;
+          const coef = metal.riffleCoefficients && metal.riffleCoefficients[riffle]
+            ? ` (коэф. ${metal.riffleCoefficients[riffle]})`
+            : '';
+          option.textContent = riffle + coef;
+          riffleTypeSelect.appendChild(option);
+        });
+        fieldRiffleType.classList.remove('hidden');
+        hasAnyField = true;
+        console.log(`  ✅ Показано поле "Рифление" (${metal.riffleTypes.length} вариантов)`);
+      }
+
+      // === ОЦИНКОВКА (для типов с оцинковкой) ===
+      const typesWithZinc = ['strip_tape_painted', 'strip_tape_galv', 'sheet_painted', 'sheet_galv', 'sheet_pv_galv'];
+      if (typesWithZinc.includes(metalType) && metal.zincOptions && metal.zincOptions.length > 0) {
+        // Заполнить селект вариантами оцинковки
+        zincOptionSelect.innerHTML = '<option value="">-- Выберите вариант оцинковки --</option>';
+        metal.zincOptions.forEach(zinc => {
+          const option = document.createElement('option');
+          option.value = zinc;
+          const coef = metal.zincCoefficients && metal.zincCoefficients[zinc]
+            ? ` (${metal.zincCoefficients[zinc]} кг/м²)`
+            : '';
+          option.textContent = zinc + coef;
+          zincOptionSelect.appendChild(option);
+        });
+        fieldZincOption.classList.remove('hidden');
+        hasAnyField = true;
+        console.log(`  ✅ Показано поле "Оцинковка" (${metal.zincOptions.length} вариантов)`);
+      }
+
+      // 3. Показать/скрыть контейнер
+      if (hasAnyField) {
+        container.classList.remove('hidden');
+        console.log('  ✅ Контейнер material-properties-container показан');
+      } else {
+        container.classList.add('hidden');
+        console.log('  ⚠️  Контейнер material-properties-container скрыт (нет полей для отображения)');
+      }
     }
 
     /**
@@ -951,6 +1147,28 @@
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
+
+      // === ДИНАМИЧЕСКАЯ ЗАГРУЗКА СТАНДАРТОВ ДЛЯ ЛИСТА ПВ ===
+      const metalType = document.getElementById('metal-type').value;
+      const sizeValue = document.getElementById('size').value;
+
+      if ((metalType === 'sheet_pv' || metalType === 'sheet_pv_galv') && sizeValue && metalDatabase) {
+        const metal = metalDatabase.metals[metalType];
+        if (metal && metal.sizeStandards && metal.sizeStandards[sizeValue]) {
+          const standardSelect = document.getElementById('standard-select');
+          standardSelect.innerHTML = '<option value="">-- Выберите стандарт --</option>';
+
+          metal.sizeStandards[sizeValue].forEach(standard => {
+            const option = document.createElement('option');
+            option.value = standard.name;
+            option.textContent = standard.name;
+            standardSelect.appendChild(option);
+          });
+
+          console.log(`📐 Загружено ${metal.sizeStandards[sizeValue].length} стандартов для размера ${sizeValue}`);
+        }
+      }
+
       hideResult();
     });
 
