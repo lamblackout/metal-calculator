@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-08T20:41:19.162Z
+// Собрано: 2025-11-11T12:15:36.056Z
 // ==========================================
 
 // src/formulas.js
@@ -495,10 +495,16 @@ function calculateMetal(params, metalDatabase) {
 
     // ✅ ОПРЕДЕЛИТЬ ТИП: ЛИНЕЙНЫЙ ИЛИ ПЛОЩАДНОЙ
     // Линейные типы используют МЕТРЫ, площадные используют КВ.МЕТРЫ
-    // ТОЛЬКО Круг и Канат - линейные типы (вес на погонный метр)
-    // Лист ПВ - ПЛОЩАДНОЙ тип (имеет ширину и длину листа)
-    const linearTypes = ['circle', 'circle_galv', 'rope'];
-    const isLinearType = linearTypes.includes(params.metalType);
+
+    // Площадные типы: только листы и ленты (имеют ширину × длину)
+    const areaTypes = [
+      'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
+      'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold',
+      'sheet_pv', 'sheet_pv_galv', 'sheet_checkered'
+    ];
+
+    // Все остальные - линейные (прутки, трубы, уголки, арматура и т.д.)
+    const isLinearType = !areaTypes.includes(params.metalType);
 
     // Выполнить расчет в зависимости от входных параметров
     let weight = null;
