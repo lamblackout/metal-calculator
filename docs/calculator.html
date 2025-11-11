@@ -328,6 +328,23 @@
             >
           </div>
 
+          <!-- Поле: Длина 1 шт. (показывается только для определённых типов) -->
+          <div class="form-group flex-1" id="field-length-per-piece" style="display: none;">
+            <label for="input-length-per-piece">
+              📏 Длина 1 шт.
+              <span class="field-hint">метры</span>
+            </label>
+            <input
+              type="number"
+              id="input-length-per-piece"
+              class="form-control"
+              placeholder="12"
+              value="12"
+              step="0.1"
+              min="0.1"
+            >
+          </div>
+
           <div class="form-group flex-1">
             <label for="input-pieces">
               🔢 Количество
@@ -618,12 +635,43 @@
     // ВЗАИМОЗАВИСИМЫЕ ПОЛЯ (в реальном времени)
     // ============================================================================
 
+    // ✅ ТИПЫ С ПОЛЕМ "ДЛИНА 1 ШТ." (42 типа)
+    const TYPES_WITH_LENGTH_FIELD = [
+      // Арматура (6)
+      'armature_a1', 'armature_a1_galv', 'armature_a3', 'armature_a3_galv',
+      'armature_at800', 'armature_at1000',
+      // Балка, Катанка, Квадрат (3)
+      'beam', 'wire_rod', 'square',
+      // Круг (2)
+      'circle', 'circle_galv',
+      // Полоса (3)
+      'strip', 'strip_galv', 'bulb_flat',
+      // Рельс (1)
+      'rail',
+      // Трубы (18)
+      'pipe_vgp', 'pipe_vgp_galv', 'pipe_pnd',
+      'pipe_seamless_hot', 'pipe_seamless_hot_galv', 'pipe_boiler',
+      'pipe_seamless_cold', 'pipe_seamless_cold_galv',
+      'pipe_square', 'pipe_square_galv',
+      'pipe_oval', 'pipe_oval_galv',
+      'pipe_flatoval', 'pipe_flatoval_galv',
+      'pipe_rect', 'pipe_rect_galv',
+      'pipe_es', 'pipe_es_galv',
+      // Уголок (4)
+      'angle', 'angle_bent', 'angle_bent_galv', 'angle_galv',
+      // Швеллер (4)
+      'channel', 'channel_bent', 'channel_bent_galv', 'channel_galv',
+      // Шестигранник (1)
+      'hexagon'
+    ];
+
     let isCalculating = false;  // Флаг чтобы избежать циклических пересчётов
     let debounceTimer = null;   // Таймер для debounce
 
     // Получить ссылки на поля
     const weightInput = document.getElementById('input-weight');
     const lengthInput = document.getElementById('input-length');
+    const lengthPerPieceInput = document.getElementById('input-length-per-piece');
     const piecesInput = document.getElementById('input-pieces');
     const areaInput = null;  // Поле площади УДАЛЕНО - площадь считается автоматически
     const widthInput = document.getElementById('input-width');
@@ -1117,6 +1165,23 @@
         // Скрыть блок с автоматической площадью
         if (calculatedBox) calculatedBox.style.display = 'none';
       }
+
+      // ===== ПОКАЗАТЬ/СКРЫТЬ ПОЛЕ "ДЛИНА 1 ШТ." =====
+      const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
+      if (fieldLengthPerPiece) {
+        if (TYPES_WITH_LENGTH_FIELD.includes(metalType)) {
+          console.log('✅ Показываем поле "Длина 1 шт." для', metalType);
+          fieldLengthPerPiece.style.display = 'block';
+          // Устанавливаем значение по умолчанию 12 м, если поле пустое
+          if (!lengthPerPieceInput.value || lengthPerPieceInput.value === '0') {
+            lengthPerPieceInput.value = '12';
+          }
+        } else {
+          console.log('❌ Скрываем поле "Длина 1 шт." для', metalType);
+          fieldLengthPerPiece.style.display = 'none';
+          lengthPerPieceInput.value = '';  // Очищаем значение
+        }
+      }
     }
 
     // ============================================================================
@@ -1135,8 +1200,33 @@
 
     // При изменении количества
     piecesInput.addEventListener('input', (e) => {
+      // Если заполнены "Длина 1 шт." и "Количество" → рассчитать общую длину
+      calculateTotalLengthFromPieces();
       debounceRecalculate('pieces');
     });
+
+    // При изменении длины 1 шт. → рассчитать общую длину автоматически
+    lengthPerPieceInput.addEventListener('input', (e) => {
+      calculateTotalLengthFromPieces();
+    });
+
+    // Функция расчёта общей длины из "Длина 1 шт." × "Количество"
+    function calculateTotalLengthFromPieces() {
+      const lengthPerPiece = parseFloat(lengthPerPieceInput.value);
+      const pieces = parseInt(piecesInput.value);
+
+      // Проверяем что поле "Длина 1 шт." видимо (для данного типа металла)
+      const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
+      const isVisible = fieldLengthPerPiece && fieldLengthPerPiece.style.display !== 'none';
+
+      if (isVisible && lengthPerPiece && pieces && lengthPerPiece > 0 && pieces > 0) {
+        const totalLength = lengthPerPiece * pieces;
+        lengthInput.value = totalLength.toFixed(2);
+        console.log(`📐 Автоматический расчёт: ${pieces} шт × ${lengthPerPiece} м = ${totalLength} м`);
+        // Запускаем пересчёт веса с новой длиной
+        debounceRecalculate('length');
+      }
+    }
 
     // Поле "Площадь" удалено - площадь считается автоматически из ширины × длины
 
