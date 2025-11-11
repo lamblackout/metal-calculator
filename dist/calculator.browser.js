@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-11T14:47:53.853Z
+// Собрано: 2025-11-11T15:01:11.441Z
 // ==========================================
 
 (function(window) {
@@ -496,8 +496,14 @@ function calculateMetal(params, metalDatabase) {
     // Получить стандартную длину
     const standardLength = getStandardLength(metal);
 
-    // ✅ ОПРЕДЕЛИТЬ ТИП: ЛИНЕЙНЫЙ ИЛИ ПЛОЩАДНОЙ
-    // Линейные типы используют МЕТРЫ, площадные используют КВ.МЕТРЫ
+    // ✅ ОПРЕДЕЛИТЬ ТИП: КРЕПЕЖ, ЛИНЕЙНЫЙ ИЛИ ПЛОЩАДНОЙ
+
+    // Крепежи: вес ↔ количество штук (БЕЗ длины)
+    const fastenerTypes = [
+      'bolt', 'screw', 'nut', 'nail', 'selftapping',
+      'washer', 'stud', 'cotter', 'woodscrew'
+    ];
+    const isFastener = fastenerTypes.includes(params.metalType);
 
     // Площадные типы: только листы и ленты (имеют ширину × длину)
     const areaTypes = [
@@ -507,7 +513,7 @@ function calculateMetal(params, metalDatabase) {
     ];
 
     // Все остальные - линейные (прутки, трубы, уголки, арматура и т.д.)
-    const isLinearType = !areaTypes.includes(params.metalType);
+    const isLinearType = !areaTypes.includes(params.metalType) && !isFastener;
 
     // Выполнить расчет в зависимости от входных параметров
     let weight = null;
@@ -518,9 +524,30 @@ function calculateMetal(params, metalDatabase) {
       // Дано: вес (в тоннах) → найти длину/площадь и штуки
       const requestedWeight = params.weight;
       const weightInKg = requestedWeight * 1000;
-      const calculated = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
 
-      if (isLinearType) {
+      if (isFastener) {
+        // ✅ КРЕПЕЖ: вес → количество штук (БЕЗ длины)
+        // Для крепежей weightPerMeter = вес 1 штуки (в кг)
+        const weightPerPiece = weightPerMeter;  // кг
+        const calculatedPieces = weightInKg / weightPerPiece;
+
+        // Округляем до целого (математическое округление)
+        pieces = Math.round(calculatedPieces);
+
+        // Пересчитываем вес под округлённое количество
+        const actualWeightKg = pieces * weightPerPiece;
+        weight = actualWeightKg / 1000;  // в тоннах
+
+        // Для крепежей length остаётся null
+        length = null;
+
+        console.log(`🔩 Крепёж: ${weightInKg.toFixed(2)} кг → ${pieces} шт (вес 1шт: ${weightPerPiece.toFixed(6)} кг)`);
+
+      } else {
+        // Для линейных и площадных типов
+        const calculated = formulas.calculateLengthFromWeight(weightInKg, weightPerMeter);
+
+        if (isLinearType) {
         // ✅ ЛИНЕЙНЫЙ ТИП: метры / длина_1_шт
         length = calculated;  // Это метры (ДО округления)
 
@@ -557,6 +584,7 @@ function calculateMetal(params, metalDatabase) {
       // Пересчитываем вес ИЗ ОКРУГЛЁННОЙ длины/площади
       const actualWeightKg = weightPerMeter * length;
       weight = actualWeightKg / 1000;
+      }
 
     } else if (params.length) {
       // Дано: длина/площадь → найти вес и штуки
@@ -596,10 +624,22 @@ function calculateMetal(params, metalDatabase) {
       // Дано: штуки → найти длину/площадь и вес
       pieces = params.pieces;
 
-      if (isLinearType) {
+      if (isFastener) {
+        // ✅ КРЕПЕЖ: количество штук → вес (БЕЗ длины)
+        const weightPerPiece = weightPerMeter;  // кг
+        const weightInKg = pieces * weightPerPiece;
+        weight = weightInKg / 1000;  // в тоннах
+        length = null;  // Для крепежей length остаётся null
+
+        console.log(`🔩 Крепёж: ${pieces} шт → ${weightInKg.toFixed(2)} кг (вес 1шт: ${weightPerPiece.toFixed(6)} кг)`);
+
+      } else if (isLinearType) {
         // ✅ ЛИНЕЙНЫЙ ТИП: метры = штуки × длина_1_шт
         const pieceLength = params.lengthSheet || standardLength || 1;
         length = pieces * pieceLength;
+
+        const weightInKg = weightPerMeter * length;
+        weight = weightInKg / 1000;
       } else {
         // ✅ ПЛОЩАДНОЙ ТИП: кв.метры = штуки × (ширина × длина)
         if (params.width && params.width > 0 &&
@@ -610,10 +650,10 @@ function calculateMetal(params, metalDatabase) {
           // Если нет размеров 1 штуки - используем 1 кв.м по умолчанию
           length = pieces;
         }
-      }
 
-      const weightInKg = weightPerMeter * length;
-      weight = weightInKg / 1000;
+        const weightInKg = weightPerMeter * length;
+        weight = weightInKg / 1000;
+      }
 
     } else if (params.area) {
       // Дано: площадь (специальный случай) → найти вес
