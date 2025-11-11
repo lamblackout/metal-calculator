@@ -1513,9 +1513,23 @@
       // Количество штук
       if (result.actual.pieces !== null) {
         let piecesText = `<strong>${result.actual.pieces} шт</strong>`;
-        if (result.standardLength) {
+
+        // ✅ Используем значение из поля "Длина 1 шт." если оно доступно
+        const lengthPerPieceInput = document.getElementById('input-length-per-piece');
+        const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
+        const isFieldVisible = fieldLengthPerPiece && fieldLengthPerPiece.style.display !== 'none';
+        const lengthPerPiece = lengthPerPieceInput && lengthPerPieceInput.value
+          ? parseFloat(lengthPerPieceInput.value)
+          : null;
+
+        if (isFieldVisible && lengthPerPiece && lengthPerPiece > 0) {
+          // Используем введённое пользователем значение
+          piecesText += ` × ${lengthPerPiece}м`;
+        } else if (result.standardLength) {
+          // Используем стандартное значение из базы
           piecesText += ` × ${result.standardLength}м`;
         }
+
         html += createHighlightRow('🔢 Количество', piecesText);
       }
 
