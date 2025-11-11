@@ -1,0 +1,58 @@
+[
+  {
+    "type": "Винты",
+    "key": "screws",
+    "file": "screws-data.json",
+    "sizes": 634,
+    "standards": 8,
+    "success": true
+  },
+  {
+    "type": "Гайки",
+    "key": "nuts",
+    "file": "nuts-data.json",
+    "sizes": 44,
+    "standards": 4,
+    "success": true
+  },
+  {
+    "type": "Гвозди",
+    "key": "nails",
+    "file": "nails-data.json",
+    "sizes": 536,
+    "standards": 58,
+    "success": true
+  },
+  {
+    "type": "Саморезы",
+    "key": "self_tapping_screws",
+    "file": "self_tapping_screws-data.json",
+    "sizes": 67,
+    "standards": 3,
+    "success": true
+  },
+  {
+    "type": "Шайбы",
+    "key": "washers",
+    "file": "washers-data.json",
+    "sizes": 74,
+    "standards": 6,
+    "success": true
+  },
+  {
+    "type": "Шплинты",
+    "key": "split_pins",
+    "file": "split_pins-data.json",
+    "sizes": 181,
+    "standards": 1,
+    "success": true
+  },
+  {
+    "type": "Шурупы",
+    "key": "wood_screws",
+    "file": "wood_screws-data.json",
+    "sizes": 176,
+    "standards": 10,
+    "success": true
+  }
+]

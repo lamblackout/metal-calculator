@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-11T15:01:11.440Z
+// Собрано: 2025-11-11T19:38:32.206Z
 // ==========================================
 
 // src/formulas.js
@@ -315,7 +315,9 @@ function calculateMetal(params, metalDatabase) {
       steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
 
       const sizeCoef = metal.coefficients ? metal.coefficients[String(params.size)] : null;
-      const steelCoef = metal.steelCoefficients ? metal.steelCoefficients[steelType] : null;
+      // Поддержка обоих вариантов названий полей
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      const steelCoef = steelCoefs ? steelCoefs[steelType] : null;
 
       if (!sizeCoef) {
         return {
@@ -402,7 +404,9 @@ function calculateMetal(params, metalDatabase) {
 
       // Оцинковка в долях (0.021, 0.036 и т.д.)
       const zincOption = params.zincOption || 'нет';
-      const zincCoef = metal.zincCoefficients?.[zincOption] || 0;
+      // Поддержка обоих вариантов названий полей
+      const zincCoefs = metal.galvanizationWeights || metal.zincCoefficients;
+      const zincCoef = zincCoefs?.[zincOption] || 0;
 
       const coefficient = standardData.coefficient;
       const steelDensity = 7.85;
@@ -439,7 +443,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 кв.метра (кг) = sizeCoef × riffleCoef
       weightPerMeter = sizeCoef * riffleCoef;
-    } else if (metal.weights && metal.steelCoefficients) {
+    } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула: Вес (т) = calc_koef1 × метры × stal_koef / 1000
       // Вес 1 метра (кг) = calc_koef1 × stal_koef
@@ -447,7 +451,9 @@ function calculateMetal(params, metalDatabase) {
       steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
 
       const sizeCoef = metal.weights[String(params.size)];
-      const steelCoef = metal.steelCoefficients[steelType];
+      // Поддержка обоих вариантов названий полей
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      const steelCoef = steelCoefs[steelType];
 
       if (!sizeCoef) {
         return {

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Калькулятор Катанки с выбором марки стали</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Данные Катанки
+        const KATANKA_DATA = {
+            sizes: [4.5, 5, 5.5, 6, 6.5, 6.7, 7, 7.5, 8, 8.5, 9, 9.5, 10, 11, 11.5, 12, 13, 13.5, 14, 15, 16, 17, 19, 20, 22, 24, 25],
+            coefficients: {
+                "4.5": 0.015923566879, "5": 0.019617834395, "5.5": 0.023694267516,
+                "6": 0.028280254777, "6.5": 0.033121019108, "6.7": 0.035286624204,
+                "7": 0.03847133758, "7.5": 0.044203821656, "8": 0.050318471338,
+                "8.5": 0.056687898089, "9": 0.063566878981, "9.5": 0.070828025478,
+                "10": 0.07847133758, "11": 0.095031847134, "11.5": 0.103821656051,
+                "12": 0.113121019108, "13": 0.132738853503, "13.5": 0.143184713376,
+                "14": 0.153885350318, "15": 0.176687898089, "16": 0.20101910828,
+                "17": 0.227006369427, "19": 0.283566878981, "20": 0.314140127389,
+                "22": 0.380127388535, "24": 0.452356687898, "25": 0.490828025478
+            },
+            steelTypes: ["ст08", "ст0", "ст1", "ст2", "ст3", "ст10", "ст15", "ст20", "ст30", "ст35", "ст40", "ст45", "ст50", "ст55", "ст60", "09Г2С", "10Г2", "15Г", "15Х", "20Г", "20Х", "30Г", "30Х", "35Г2", "40Г", "40Х", "45Г2", "45Х", "50Г", "50Г2", "50Х", "65Г", "У7", "У8", "У10", "У12", "Р18"],
+            steelCoefficients: {
+                "ст08": 7.871, "ст0": 7.85, "ст1": 7.85, "ст2": 7.85, "ст3": 7.85,
+                "ст10": 7.856, "ст15": 7.85, "ст20": 7.859, "ст30": 7.85, "ст35": 7.826,
+                "ст40": 7.85, "ст45": 7.826, "ст50": 7.81, "ст55": 7.82, "ст60": 7.8,
+                "09Г2С": 7.85, "10Г2": 7.79, "15Г": 7.81, "15Х": 7.83, "20Г": 7.82,
+                "20Х": 7.83, "30Г": 7.81, "30Х": 7.82, "35Г2": 7.79, "40Г": 7.81,
+                "40Х": 7.85, "45Г2": 7.81, "45Х": 7.82, "50Г": 7.81, "50Г2": 7.5,
+                "50Х": 7.82, "65Г": 7.85, "У7": 7.83, "У8": 7.839, "У10": 7.81,
+                "У12": 7.83, "Р18": 8.8
+            }
+        };
+
+        function KatankaCalculator() {
+            const [size, setSize] = useState('10');
+            const [steel, setSteel] = useState('ст3');
+            const [tons, setTons] = useState('');
+            const [meters, setMeters] = useState('');
+            const [pieces, setPieces] = useState('');
+            const [pieceLength, setPieceLength] = useState('1');
+
+            const fixInput = (val) => val.replace(',', '.');
+
+            useEffect(() => {
+                if (!size || !steel) return;
+
+                const timer = setTimeout(() => {
+                    const coef = KATANKA_DATA.coefficients[String(size)];
+                    const steelCoef = KATANKA_DATA.steelCoefficients[steel];
+                    
+                    if (tons) {
+                        const t = parseFloat(fixInput(tons));
+                        if (t > 0 && coef && steelCoef) {
+                            const m = (t * 1000) / (coef * steelCoef);
+                            setMeters(m.toFixed(2));
+                            const pl = parseFloat(pieceLength) || 1;
+                            setPieces(Math.floor(m / pl).toString());
+                        }
+                    } else if (meters) {
+                        const m = parseFloat(fixInput(meters));
+                        if (m > 0 && coef && steelCoef) {
+                            const w = (m * coef * steelCoef) / 1000;
+                            setTons(w.toFixed(4));
+                            const pl = parseFloat(pieceLength) || 1;
+                            setPieces(Math.floor(m / pl).toString());
+                        }
+                    } else if (pieces && pieceLength) {
+                        const p = parseFloat(fixInput(pieces));
+                        const pl = parseFloat(fixInput(pieceLength));
+                        if (p > 0 && pl > 0 && coef && steelCoef) {
+                            const m = p * pl;
+                            setMeters(m.toFixed(2));
+                            const w = (m * coef * steelCoef) / 1000;
+                            setTons(w.toFixed(4));
+                        }
+                    }
+                }, 300);
+
+                return () => clearTimeout(timer);
+            }, [tons, meters, pieces, pieceLength, size, steel]);
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-t-2xl p-6 text-white">
+                            <h1 className="text-3xl font-bold flex items-center gap-3">
+                                🔧 Калькулятор Катанки
+                            </h1>
+                            <p className="mt-2 text-blue-100">Автоматический пересчёт • 37 марок стали • ГОСТ 380-2005</p>
+                        </div>
+
+                        <div className="bg-white rounded-b-2xl shadow-2xl p-6 space-y-6">
+                            {/* ГОСТ */}
+                            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-600 rounded-lg">
+                                <div className="text-xs text-blue-600 font-semibold uppercase">Нормативный документ</div>
+                                <div className="text-sm font-bold text-blue-900 mt-1">ГОСТ 380-2005, ГОСТ 535-2005, ГОСТ 2590-2006, ГОСТ 30136-95</div>
+                            </div>
+
+                            {/* Размер */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-3">
+                                    <span className="text-lg">📏</span> Выберите размер:
+                                </label>
+                                <select
+                                    value={size}
+                                    onChange={(e) => setSize(e.target.value)}
+                                    className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-base bg-white"
+                                >
+                                    {KATANKA_DATA.sizes.map(s => (
+                                        <option key={s} value={s}>{s} мм</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Марка стали */}
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 mb-3">
+                                    <span className="text-lg">🔩</span> Выберите марку стали:
+                                </label>
+                                <select
+                                    value={steel}
+                                    onChange={(e) => setSteel(e.target.value)}
+                                    className="w-full p-4 border-2 border-gray-300 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all text-base bg-white"
+                                >
+                                    {KATANKA_DATA.steelTypes.map(s => (
+                                        <option key={s} value={s}>
+                                            {s} (плотность: {KATANKA_DATA.steelCoefficients[s]} т/м³)
+                                        </option>
+                                    ))}
+                                </select>
+                                
+                                <div className="mt-3 p-4 bg-gradient-to-r from-gray-50 to-slate-50 border-l-4 border-gray-600 rounded-lg">
+                                    <div className="text-xs text-gray-600 font-semibold uppercase">Выбранная марка</div>
+                                    <div className="text-base font-bold text-gray-900 mt-1">
+                                        {steel} — плотность {KATANKA_DATA.steelCoefficients[steel]} т/м³
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Поля ввода */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Вес (тонны):</label>
+                                    <input
+                                        type="text"
+                                        value={tons}
+                                        onChange={(e) => {
+                                            setTons(e.target.value);
+                                            setMeters('');
+                                            setPieces('');
+                                        }}
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        placeholder="0.1"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Метры:</label>
+                                    <input
+                                        type="text"
+                                        value={meters}
+                                        onChange={(e) => {
+                                            setMeters(e.target.value);
+                                            setTons('');
+                                            setPieces('');
+                                        }}
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        placeholder="100"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Длина 1 шт (м):</label>
+                                    <input
+                                        type="text"
+                                        value={pieceLength}
+                                        onChange={(e) => setPieceLength(e.target.value)}
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        placeholder="1"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-gray-700 mb-2">Количество (шт):</label>
+                                    <input
+                                        type="text"
+                                        value={pieces}
+                                        onChange={(e) => {
+                                            setPieces(e.target.value);
+                                            setTons('');
+                                            setMeters('');
+                                        }}
+                                        className="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                                        placeholder="100"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Результаты */}
+                            {(tons || meters || pieces) && (
+                                <div className="mt-6 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl">
+                                    <h3 className="text-lg font-bold text-green-800 mb-4">📊 Результаты:</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        {tons && (
+                                            <div className="bg-white p-4 rounded-lg shadow">
+                                                <div className="text-xs text-gray-600 font-semibold uppercase">Вес:</div>
+                                                <div className="text-2xl font-bold text-green-700">{tons} т</div>
+                                                <div className="text-sm text-gray-500 mt-1">{(parseFloat(tons) * 1000).toFixed(1)} кг</div>
+                                            </div>
+                                        )}
+                                        {meters && (
+                                            <div className="bg-white p-4 rounded-lg shadow">
+                                                <div className="text-xs text-gray-600 font-semibold uppercase">Длина:</div>
+                                                <div className="text-2xl font-bold text-blue-700">{meters} м</div>
+                                            </div>
+                                        )}
+                                        {pieces && (
+                                            <div className="bg-white p-4 rounded-lg shadow">
+                                                <div className="text-xs text-gray-600 font-semibold uppercase">Количество:</div>
+                                                <div className="text-2xl font-bold text-purple-700">{pieces} шт</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="mt-4 pt-4 border-t border-green-200">
+                                        <p className="text-sm text-gray-600">
+                                            <strong>Параметры:</strong> Размер {size} мм • Сталь {steel} ({KATANKA_DATA.steelCoefficients[steel]} т/м³)
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="mt-4 text-center text-sm text-gray-600">
+                            <p>✅ Калькулятор Катанки • 27 размеров • 37 марок стали • Автоматический пересчёт</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<KatankaCalculator />);
+    </script>
+</body>
+</html>

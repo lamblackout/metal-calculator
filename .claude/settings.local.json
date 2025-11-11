@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -command:*)",
+      "Bash(node:*)",
+      "Bash(del \"C:\\Users\\Skylake\\metal-calculator\\analyze_rope.js\" \"C:\\Users\\Skylake\\metal-calculator\\analyze_rope2.js\")",
+      "Bash(del distcalculator.bundle.js distcalculator.browser.js)",
+      "Bash(npm run build:*)",
+      "Bash(findstr:*)",
+      "Bash(del check-angles.js debug-angle.js)",
+      "Bash(del check-sheets-strips.js check-actual-sheets.js)",
+      "Bash(del \"C:\\Users\\Skylake\\metal-calculator\\check-sheets-strips.js\" \"C:\\Users\\Skylake\\metal-calculator\\check-actual-sheets.js\")",
+      "Bash(npm run build:node:*)",
+      "Bash(npm run:*)",
+      "Bash(del check-rail-flatbar.js fix-rail-weights.js)",
+      "Bash(npm test:*)",
+      "Bash(dir:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(nul)",
+      "Bash(del:*)",
+      "Bash(cat:*)",
+      "Bash(start docs/calculator.html)",
+      "Bash(git log:*)",
+      "Bash(git rm:*)",
+      "Bash(test:*)",
+      "Bash(git reset:*)",
+      "Bash(git checkout:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

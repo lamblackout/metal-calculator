@@ -1063,25 +1063,28 @@
       // === МАРКА СТАЛИ (для стандартных типов) ===
       const typesWithSteel = ['circle', 'circle_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
                               'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold'];
-      if (typesWithSteel.includes(metalType) && metal.steelTypes && metal.steelTypes.length > 0) {
+      // Поддержка обоих вариантов названий полей
+      const steelList = metal.steelGrades || metal.steelTypes;
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      if (typesWithSteel.includes(metalType) && steelList && steelList.length > 0) {
         // Заполнить селект марками стали
         steelTypeSelect.innerHTML = '<option value="">-- Выберите марку стали --</option>';
-        metal.steelTypes.forEach(steel => {
+        steelList.forEach(steel => {
           const option = document.createElement('option');
           option.value = steel;
-          const density = metal.steelCoefficients && metal.steelCoefficients[steel]
-            ? ` (${metal.steelCoefficients[steel]} кг/дм³)`
+          const density = steelCoefs && steelCoefs[steel]
+            ? ` (${steelCoefs[steel]} кг/дм³)`
             : '';
           option.textContent = steel + density;
           steelTypeSelect.appendChild(option);
         });
         // Выбрать ст3 по умолчанию если есть
-        if (metal.steelTypes.includes('ст3')) {
+        if (steelList.includes('ст3')) {
           steelTypeSelect.value = 'ст3';
         }
         fieldSteelType.classList.remove('hidden');
         hasAnyField = true;
-        console.log(`  ✅ Показано поле "Марка стали" (${metal.steelTypes.length} вариантов)`);
+        console.log(`  ✅ Показано поле "Марка стали" (${steelList.length} вариантов)`);
       }
 
       // === СТАНДАРТ (ТУ) (для Листа ПВ) ===
@@ -1119,26 +1122,29 @@
 
       // === ОЦИНКОВКА (для типов с оцинковкой) ===
       const typesWithZinc = ['strip_tape_painted', 'strip_tape_galv', 'sheet_painted', 'sheet_galv', 'sheet_pv_galv'];
-      if (typesWithZinc.includes(metalType) && metal.zincOptions && metal.zincOptions.length > 0) {
+      // Поддержка обоих вариантов названий полей
+      const galvList = metal.galvanization || metal.zincOptions;
+      const galvCoefs = metal.galvanizationWeights || metal.zincCoefficients;
+      if (typesWithZinc.includes(metalType) && galvList && galvList.length > 0) {
         // Заполнить селект вариантами оцинковки
         zincOptionSelect.innerHTML = '<option value="">-- Выберите вариант оцинковки --</option>';
-        metal.zincOptions.forEach(zinc => {
+        galvList.forEach(zinc => {
           const option = document.createElement('option');
           option.value = zinc;
-          const coef = metal.zincCoefficients && metal.zincCoefficients[zinc]
-            ? ` (${metal.zincCoefficients[zinc]} кг/м²)`
+          const coef = galvCoefs && galvCoefs[zinc]
+            ? ` (${galvCoefs[zinc]} кг/м²)`
             : '';
           option.textContent = zinc + coef;
           zincOptionSelect.appendChild(option);
         });
         // Автоматически выбрать первый вариант оцинковки
-        if (metal.zincOptions.length > 0) {
-          zincOptionSelect.value = metal.zincOptions[0];
-          console.log(`  🎯 Автоматически выбрана оцинковка: ${metal.zincOptions[0]}`);
+        if (galvList.length > 0) {
+          zincOptionSelect.value = galvList[0];
+          console.log(`  🎯 Автоматически выбрана оцинковка: ${galvList[0]}`);
         }
         fieldZincOption.classList.remove('hidden');
         hasAnyField = true;
-        console.log(`  ✅ Показано поле "Оцинковка" (${metal.zincOptions.length} вариантов)`);
+        console.log(`  ✅ Показано поле "Оцинковка" (${galvList.length} вариантов)`);
       }
 
       // 3. Показать/скрыть контейнер
