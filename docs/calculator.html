@@ -923,7 +923,10 @@
     /**
      * Debounce функция (задержка перед пересчётом)
      */
-    function debounceRecalculate(sourceField, delay = 1500) {
+    function debounceRecalculate(sourceField, delay = 500) {
+      // Скрыть результаты пока идёт ввод
+      hideResult();
+
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         recalculateFields(sourceField);
