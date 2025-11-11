@@ -563,6 +563,12 @@
       console.log('📊 Выбран тип металла:', metalType);
       updateSheetFieldsVisibility();
 
+      // 🔓 Сбрасываем приоритет при смене типа металла
+      if (inputPriority) {
+        console.log(`🔓 Сброшен приоритет при смене типа металла: ${inputPriority}`);
+        inputPriority = null;
+      }
+
       // Показать ГОСТ и категорию
       const metalInfo = document.getElementById('metal-info');
       const gostText = document.getElementById('gost-text');
@@ -680,6 +686,7 @@
 
     let isCalculating = false;  // Флаг чтобы избежать циклических пересчётов
     let debounceTimer = null;   // Таймер для debounce
+    let inputPriority = null;   // Приоритет: 'weight', 'length', 'pieces' - какое поле ввели первым
 
     // Получить ссылки на поля
     const weightInput = document.getElementById('input-weight');
@@ -1239,29 +1246,82 @@
     }
 
     // ============================================================================
+    // ФУНКЦИИ УПРАВЛЕНИЯ ПРИОРИТЕТОМ
+    // ============================================================================
+
+    /**
+     * Установить приоритет поля (какое поле ввели первым)
+     */
+    function setPriority(field) {
+      if (!inputPriority) {
+        inputPriority = field;
+        console.log(`🔒 Установлен приоритет поля: ${field}`);
+      }
+    }
+
+    /**
+     * Сбросить приоритет (при очистке всех полей или смене типа металла)
+     */
+    function resetPriority() {
+      const weight = parseFloat(weightInput.value) || 0;
+      const length = parseFloat(lengthInput.value) || 0;
+      const pieces = parseInt(piecesInput.value) || 0;
+
+      // Если все ключевые поля пустые - сбрасываем приоритет
+      if (weight === 0 && length === 0 && pieces === 0) {
+        if (inputPriority) {
+          console.log(`🔓 Сброшен приоритет поля: ${inputPriority}`);
+        }
+        inputPriority = null;
+      }
+    }
+
+    // ============================================================================
     // СОБЫТИЯ НА ПОЛЯХ
     // ============================================================================
 
     // При изменении веса
     weightInput.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value) || 0;
+
+      if (value > 0) {
+        setPriority('weight');  // Устанавливаем приоритет при первом вводе
+      }
+
       debounceRecalculate('weight');
+      resetPriority();
     });
 
     // При изменении длины
     lengthInput.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value) || 0;
+
+      if (value > 0) {
+        setPriority('length');  // Устанавливаем приоритет при первом вводе
+      }
+
       debounceRecalculate('length');
+      resetPriority();
     });
 
     // При изменении количества
     piecesInput.addEventListener('input', (e) => {
+      const value = parseInt(e.target.value) || 0;
+
+      if (value > 0) {
+        setPriority('pieces');  // Устанавливаем приоритет при первом вводе
+      }
+
       // Если заполнены "Длина 1 шт." и "Количество" → рассчитать общую длину
-      // calculateTotalLengthFromPieces() вызовет debounceRecalculate('pieces') если успешно
+      // calculateTotalLengthFromPieces() вызовет debounceRecalculate() с учётом приоритета
       const calculated = calculateTotalLengthFromPieces();
 
       // Если поле "Длина 1 шт." неактивно - стандартный пересчёт
       if (!calculated) {
         debounceRecalculate('pieces');
       }
+
+      resetPriority();
     });
 
     // При изменении длины 1 шт. → рассчитать общую длину автоматически
@@ -1284,11 +1344,19 @@
         lengthInput.value = totalLength.toFixed(2);
         console.log(`📐 Автоматический расчёт: ${pieces} шт × ${lengthPerPiece} м = ${totalLength} м`);
 
-        // ✅ ИСПРАВЛЕНИЕ: Передаём pieces в backend (не length!)
-        // Backend использует lengthSheet (из поля "Длина 1 шт.") для точного расчёта
-        // Это предотвращает переокругление через standardLength
-        piecesInput.value = pieces;
-        debounceRecalculate('pieces');
+        // ✅ НОВАЯ ЛОГИКА: Учитываем приоритет поля
+        // Если приоритет у weight → пересчитываем pieces (weight остаётся)
+        // Если приоритет у pieces → пересчитываем weight (pieces остаётся)
+        if (inputPriority === 'weight') {
+          console.log(`🔒 Приоритет у ВЕСА → пересчитываем количество штук`);
+          debounceRecalculate('weight');
+        } else {
+          // Приоритет у pieces или не установлен - стандартная логика
+          console.log(`🔒 Приоритет у КОЛИЧЕСТВА (или не установлен) → пересчитываем вес`);
+          piecesInput.value = pieces;
+          debounceRecalculate('pieces');
+        }
+
         return true;  // Успешно вызван пересчёт
       }
 
@@ -1350,6 +1418,12 @@
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
+
+      // 🔓 Сбрасываем приоритет при смене размера
+      if (inputPriority) {
+        console.log(`🔓 Сброшен приоритет при смене размера: ${inputPriority}`);
+        inputPriority = null;
+      }
 
       // === ДИНАМИЧЕСКАЯ ЗАГРУЗКА СТАНДАРТОВ ДЛЯ ЛИСТА ПВ ===
       const metalType = document.getElementById('metal-type').value;
