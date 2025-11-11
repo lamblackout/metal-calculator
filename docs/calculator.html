@@ -313,7 +313,7 @@
             >
           </div>
 
-          <div class="form-group flex-1">
+          <div class="form-group flex-1" id="field-length">
             <label for="input-length">
               📐 Длина
               <span class="field-hint">метры</span>
@@ -663,6 +663,19 @@
       'channel', 'channel_bent', 'channel_bent_galv', 'channel_galv',
       // Шестигранник (1)
       'hexagon'
+    ];
+
+    // ✅ КРЕПЕЖИ (9 типов) - только "Вес" и "Количество штук", БЕЗ поля "Длина"
+    const FASTENER_TYPES = [
+      'bolty',      // Болты
+      'vinty',      // Винты
+      'gaiki',      // Гайки
+      'gvozdi',     // Гвозди
+      'samorezy',   // Саморезы
+      'shaiby',     // Шайбы
+      'shpilki',    // Шпильки
+      'shplynty',   // Шплинты
+      'shyrypy'     // Шурупы
     ];
 
     let isCalculating = false;  // Флаг чтобы избежать циклических пересчётов
@@ -1124,17 +1137,45 @@
       console.log('🔧 updateSheetFieldsVisibility вызвана для типа:', metalType);
 
       // Получить элементы полей (поле площади удалено - она считается автоматически)
+      const fieldLength = document.getElementById('field-length');
       const fieldWidth = document.getElementById('field-width');
       const fieldLengthSheet = document.getElementById('field-length-sheet');
       const calculatedBox = document.getElementById('calculated-area-box');
 
       // Проверка существования элементов
-      if (!fieldWidth || !fieldLengthSheet) {
-        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Не найдены элементы листовых полей!');
+      if (!fieldLength || !fieldWidth || !fieldLengthSheet) {
+        console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Не найдены элементы полей!');
+        console.error('  field-length:', fieldLength ? '✅' : '❌');
         console.error('  field-width:', fieldWidth ? '✅' : '❌');
         console.error('  field-length-sheet:', fieldLengthSheet ? '✅' : '❌');
         return;
       }
+
+      // ===== КРЕПЕЖИ: СКРЫТЬ "ДЛИНА", ПОКАЗАТЬ "КОЛИЧЕСТВО" =====
+      if (FASTENER_TYPES.includes(metalType)) {
+        console.log('🔩 Тип металла - крепёж. Скрываем поле "Длина метры"');
+
+        // Для крепежей: скрываем длину, показываем только вес и количество
+        fieldLength.style.display = 'none';
+        lengthInput.value = '';  // Очищаем значение
+
+        // Скрыть все остальные дополнительные поля (листовые, длина 1 шт.)
+        fieldWidth.style.display = 'none';
+        fieldLengthSheet.style.display = 'none';
+        if (calculatedBox) calculatedBox.style.display = 'none';
+
+        const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
+        if (fieldLengthPerPiece) {
+          fieldLengthPerPiece.style.display = 'none';
+          lengthPerPieceInput.value = '';
+        }
+
+        return;  // Выходим, больше ничего не показываем
+      }
+
+      // ===== НЕ-КРЕПЕЖИ: ПОКАЗАТЬ "ДЛИНА" =====
+      console.log('📐 Тип металла - не крепёж. Показываем поле "Длина метры"');
+      fieldLength.style.display = 'block';
 
       // ===== ОПРЕДЕЛЯЕМ ТИПЫ МЕТАЛЛОВ =====
 
