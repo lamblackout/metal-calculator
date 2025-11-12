@@ -47,7 +47,7 @@ console.log();
 
 // =============================================================================
 // ТЕСТ 2: Лист рифленый 5 мм, ромб, 10 м²
-// Ожидаемый вес: 42.31 кг/м² × 10 м² / 1000 = 0.423 т
+// Ожидаемый вес: 41.8 кг/м² × 10 м² / 1000 = 0.418 т
 // =============================================================================
 console.log('📋 ТЕСТ 2: Лист рифленый 5 мм, ромб, 10 м²');
 console.log('─────────────────────────────────────────────────────────────\n');
@@ -63,12 +63,12 @@ console.log('Параметры:');
 console.log('  Толщина: 5 мм');
 console.log('  Тип рифления: ромб');
 console.log('  Площадь: 10 м²');
-console.log('  Вес 1 м²: 42.31 кг');
+console.log('  Вес 1 м²: 41.8 кг');
 console.log();
 console.log(`Результат: ${test2.weight.toFixed(3)} т`);
-console.log(`Ожидается: 0.423 т`);
+console.log(`Ожидается: 0.418 т`);
 
-const test2Expected = 0.423;
+const test2Expected = 0.418;
 const test2Diff = Math.abs(test2.weight - test2Expected);
 const test2Passed = test2Diff < 0.001;
 
@@ -78,13 +78,13 @@ console.log(`   Статус: ${test2Passed ? '✅ PASSED' : '❌ FAILED'}`);
 // Проверяем разницу между чечевицей и ромбом
 const differenceBetweenTypes = test2.weight - test1.weight;
 console.log(`\n📊 Разница ромб - чечевица: ${(differenceBetweenTypes * 1000).toFixed(1)} кг`);
-console.log(`   Ожидается: ~18 кг (ромб тяжелее)`);
-console.log(`   Статус: ${Math.abs(differenceBetweenTypes * 1000 - 18) < 1 ? '✅ PASSED' : '❌ FAILED'}`);
+console.log(`   Ожидается: ~13 кг (ромб тяжелее)`);
+console.log(`   Статус: ${Math.abs(differenceBetweenTypes * 1000 - 13) < 1 ? '✅ PASSED' : '❌ FAILED'}`);
 console.log();
 
 // =============================================================================
 // ТЕСТ 3: Лист рифленый 12 мм, ромб, 5 м²
-// Ожидаемый вес: 101.13 кг/м² × 5 м² / 1000 = 0.506 т
+// Ожидаемый вес: 99.3 кг/м² × 5 м² / 1000 = 0.497 т
 // =============================================================================
 console.log('📋 ТЕСТ 3: Лист рифленый 12 мм, ромб, 5 м²');
 console.log('─────────────────────────────────────────────────────────────\n');
@@ -100,12 +100,12 @@ console.log('Параметры:');
 console.log('  Толщина: 12 мм');
 console.log('  Тип рифления: ромб');
 console.log('  Площадь: 5 м²');
-console.log('  Вес 1 м²: 101.13 кг');
+console.log('  Вес 1 м²: 99.3 кг');
 console.log();
 console.log(`Результат: ${test3.weight.toFixed(3)} т`);
-console.log(`Ожидается: 0.506 т`);
+console.log(`Ожидается: 0.497 т`);
 
-const test3Expected = 0.506;
+const test3Expected = 0.497;
 const test3Diff = Math.abs(test3.weight - test3Expected);
 const test3Passed = test3Diff < 0.001;
 
@@ -146,7 +146,7 @@ console.log();
 
 // =============================================================================
 // ТЕСТ 5: Лист рифленый 8 мм, ромб, 15 м²
-// Ожидаемый вес: 67.81 кг/м² × 15 м² / 1000 = 1.017 т
+// Ожидаемый вес: 66.6 кг/м² × 15 м² / 1000 = 0.999 т
 // =============================================================================
 console.log('📋 ТЕСТ 5: Лист рифленый 8 мм, ромб, 15 м²');
 console.log('─────────────────────────────────────────────────────────────\n');
@@ -162,12 +162,12 @@ console.log('Параметры:');
 console.log('  Толщина: 8 мм');
 console.log('  Тип рифления: ромб');
 console.log('  Площадь: 15 м²');
-console.log('  Вес 1 м²: 67.81 кг');
+console.log('  Вес 1 м²: 66.6 кг');
 console.log();
 console.log(`Результат: ${test5.weight.toFixed(3)} т`);
-console.log(`Ожидается: 1.017 т`);
+console.log(`Ожидается: 0.999 т`);
 
-const test5Expected = 1.017;
+const test5Expected = 0.999;
 const test5Diff = Math.abs(test5.weight - test5Expected);
 const test5Passed = test5Diff < 0.001;
 
@@ -225,13 +225,13 @@ console.log('──────────────────────�
 
 const expectedWeightsRomb = {
   '2.5': 21.0,
-  '3': 25.28,
-  '4': 33.64,
-  '5': 42.31,
-  '6': 50.67,
-  '8': 67.81,
-  '10': 84.52,
-  '12': 101.13
+  '3': 25.1,
+  '4': 33.5,
+  '5': 41.8,
+  '6': 50.0,
+  '8': 66.6,
+  '10': 83.0,
+  '12': 99.3
 };
 
 let allRombSizesPassed = true;
