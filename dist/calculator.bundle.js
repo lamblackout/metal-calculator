@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-11T19:38:32.206Z
+// Собрано: 2025-11-12T08:27:20.551Z
 // ==========================================
 
 // src/formulas.js
@@ -445,8 +445,8 @@ function calculateMetal(params, metalDatabase) {
       weightPerMeter = sizeCoef * riffleCoef;
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
-      // Формула: Вес (т) = calc_koef1 × метры × stal_koef / 1000
-      // Вес 1 метра (кг) = calc_koef1 × stal_koef
+      // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
+      // Формула для линейных: Вес (т) = calc_koef1 × метры × stal_koef / 1000
 
       steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
 
@@ -474,8 +474,17 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // Вес 1 метра/кв.метра (в кг) = коэф_размера × коэф_стали
-      weightPerMeter = sizeCoef * steelCoef;
+      // Получить коэффициент оцинковки (если есть)
+      let galvCoef = 0;
+      if (params.zincOption && metal.galvanizationWeights) {
+        const galvWeights = metal.galvanizationWeights;
+        galvCoef = galvWeights[params.zincOption] || 0;
+        console.log(`  🔧 Оцинковка "${params.zincOption}": ${galvCoef} кг/м²`);
+      }
+
+      // ✅ ПРАВИЛЬНАЯ ФОРМУЛА: (sizeCoef + galvCoef) × steelCoef
+      // Оцинковка добавляется к толщине ДО умножения на плотность стали!
+      weightPerMeter = (sizeCoef + galvCoef) * steelCoef;
     } else {
       // Для всех остальных металлов используем стандартную логику
       weightPerMeter = calculateWeightPerMeter(metal, params.size);
@@ -490,11 +499,10 @@ function calculateMetal(params, metalDatabase) {
       }
     }
 
-    // Применить оцинковку если указано
-    const isGalvanized = params.isGalvanized || false;
-    if (isGalvanized && params.galvCoef) {
-      weightPerMeter = formulas.addGalvanization(weightPerMeter, params.galvCoef);
-    }
+    // ПРИМЕЧАНИЕ: Оцинковка для типов с weights и steelDensities учитывается
+    // в формуле выше (строка 251). Для остальных типов используется старая
+    // логика через params.galvCoef (если будет нужна).
+    const isGalvanized = params.zincOption && params.zincOption !== 'нет' ? true : false;
 
     // Получить стандартную длину
     const standardLength = getStandardLength(metal);
