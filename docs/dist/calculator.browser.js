@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-12T11:13:01.809Z
+// Собрано: 2025-11-12T16:51:01.639Z
 // ==========================================
 
 (function(window) {
@@ -417,35 +417,26 @@ function calculateMetal(params, metalDatabase) {
       // Вес 1 метра (кг) = coefficient × (1 + zincCoef) × steelDensity
       weightPerMeter = coefficient * (1 + zincCoef) * steelDensity;
     } else if (metal.formula === 'sheet_checkered') {
-      // ✅ ЛИСТ РИФЛЕНЫЙ - рифление вместо марок стали
-      // Формула: Вес (т) = coefficient × кв.метры × riffleCoef / 1000
+      // ✅ ЛИСТ РИФЛЕНЫЙ - используем таблицу весов в зависимости от толщины и типа рифления
+      // Формула: Вес (т) = вес_1м² × площадь_м² / 1000
       const sizeStr = String(params.size);
-      const sizeCoef = metal.weights?.[sizeStr];
-
-      if (!sizeCoef) {
-        return {
-          success: false,
-          error: `Размер ${sizeStr} не найден для листа рифленого`,
-          metalType: params.metalType,
-          size: params.size
-        };
-      }
-
-      // Тип рифления
       const riffleType = params.riffleType || 'чечевица';
-      const riffleCoef = metal.riffleCoefficients?.[riffleType];
 
-      if (!riffleCoef) {
+      // Получаем вес 1 м² из таблицы
+      const weightPerM2 = metal.riffleWeightsPerM2?.[sizeStr]?.[riffleType];
+
+      if (!weightPerM2) {
         return {
           success: false,
-          error: `Тип рифления ${riffleType} не найден`,
+          error: `Не найден вес для размера ${sizeStr} мм и рифления "${riffleType}"`,
           metalType: params.metalType,
-          size: params.size
+          size: params.size,
+          riffleType: riffleType
         };
       }
 
-      // Вес 1 кв.метра (кг) = sizeCoef × riffleCoef
-      weightPerMeter = sizeCoef * riffleCoef;
+      // Вес 1 кв.метра (кг) напрямую из таблицы
+      weightPerMeter = weightPerM2;
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
