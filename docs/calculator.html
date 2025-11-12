@@ -216,6 +216,15 @@
           <p class="text-xs text-gray-500 mt-1">Оцинковка добавляется к весу металла</p>
         </div>
 
+        <!-- Поле: Марка стали (для Квадрата) -->
+        <div id="field-steel-type-square" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Марка стали</label>
+          <select id="steel-type-square-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Выберите марку стали --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Марка стали влияет на плотность и вес металла</p>
+        </div>
+
       </div>
       <!-- ===== КОНЕЦ БЛОКА: ДИНАМИЧЕСКИЕ ПОЛЯ МАТЕРИАЛА ===== -->
 
@@ -916,6 +925,15 @@
           }
         }
 
+        // 5. МАРКА СТАЛИ (для Квадрата)
+        if (metalType === 'square') {
+          const steelTypeSquareSelect = document.getElementById('steel-type-square-select');
+          if (steelTypeSquareSelect && steelTypeSquareSelect.value) {
+            params.steelType = steelTypeSquareSelect.value;
+            console.log('  ✅ steelType (для Квадрата):', params.steelType);
+          }
+        }
+
         // ===== СТАРАЯ ЛОГИКА (для обратной совместимости с катанкой) =====
         const katankaFields = document.getElementById('katanka-fields');
         if (metalType === 'wire_rod' && !katankaFields.classList.contains('hidden')) {
@@ -1051,17 +1069,20 @@
       const fieldStandard = document.getElementById('field-standard');
       const fieldRiffleType = document.getElementById('field-riffle-type');
       const fieldZincOption = document.getElementById('field-zinc-option');
+      const fieldSteelTypeSquare = document.getElementById('field-steel-type-square');
 
       const steelTypeSelect = document.getElementById('steel-type-select');
       const standardSelect = document.getElementById('standard-select');
       const riffleTypeSelect = document.getElementById('riffle-type-select');
       const zincOptionSelect = document.getElementById('zinc-option-select');
+      const steelTypeSquareSelect = document.getElementById('steel-type-square-select');
 
       // 1. Скрыть все поля по умолчанию
       fieldSteelType.classList.add('hidden');
       fieldStandard.classList.add('hidden');
       fieldRiffleType.classList.add('hidden');
       fieldZincOption.classList.add('hidden');
+      fieldSteelTypeSquare.classList.add('hidden');
 
       let hasAnyField = false;
 
@@ -1152,6 +1173,41 @@
         fieldZincOption.classList.remove('hidden');
         hasAnyField = true;
         console.log(`  ✅ Показано поле "Оцинковка" (${galvList.length} вариантов)`);
+      }
+
+      // === МАРКА СТАЛИ ДЛЯ КВАДРАТА ===
+      if (metalType === 'square') {
+        // Получить список марок стали и их плотности из базы данных
+        const steelList = metal.steelTypes || metal.steelGrades;
+        const steelCoefs = metal.steelCoefficients || metal.steelDensities;
+
+        if (steelList && steelList.length > 0) {
+          // Заполнить селект всеми 137 марками стали
+          steelTypeSquareSelect.innerHTML = '<option value="">-- Выберите марку стали --</option>';
+          steelList.forEach(steel => {
+            const option = document.createElement('option');
+            option.value = steel;
+            const density = steelCoefs && steelCoefs[steel]
+              ? ` (${steelCoefs[steel]} т/м³)`
+              : '';
+            option.textContent = steel + density;
+            // Добавить data-атрибут с плотностью для удобства
+            if (steelCoefs && steelCoefs[steel]) {
+              option.setAttribute('data-density', steelCoefs[steel]);
+            }
+            steelTypeSquareSelect.appendChild(option);
+          });
+
+          // Выбрать ст3 по умолчанию (плотность 7.85)
+          if (steelList.includes('ст3')) {
+            steelTypeSquareSelect.value = 'ст3';
+            console.log('  🎯 Автоматически выбрана марка стали: ст3 (7.85 т/м³)');
+          }
+
+          fieldSteelTypeSquare.classList.remove('hidden');
+          hasAnyField = true;
+          console.log(`  ✅ Показано поле "Марка стали для Квадрата" (${steelList.length} вариантов)`);
+        }
       }
 
       // 3. Показать/скрыть контейнер
@@ -1503,6 +1559,71 @@
 
     // При изменении марки стали (катанка) - пересчитать
     document.getElementById('steel-type')?.addEventListener('change', () => {
+      // Пересчитать от того поля которое заполнено
+      if (weightInput.value) {
+        recalculateFields('weight');
+      } else if (lengthInput.value) {
+        recalculateFields('length');
+      } else if (piecesInput.value) {
+        recalculateFields('pieces');
+      }
+    });
+
+    // При изменении марки стали для Квадрата - пересчитать
+    document.getElementById('steel-type-square-select')?.addEventListener('change', () => {
+      console.log('🔄 Марка стали для Квадрата изменена, запускаем пересчёт');
+      // Пересчитать от того поля которое заполнено
+      if (weightInput.value) {
+        recalculateFields('weight');
+      } else if (lengthInput.value) {
+        recalculateFields('length');
+      } else if (piecesInput.value) {
+        recalculateFields('pieces');
+      }
+    });
+
+    // При изменении рифления для Листа рифленого - пересчитать
+    document.getElementById('riffle-type-select')?.addEventListener('change', () => {
+      console.log('🔄 Тип рифления изменён, запускаем пересчёт');
+      // Пересчитать от того поля которое заполнено
+      if (weightInput.value) {
+        recalculateFields('weight');
+      } else if (lengthInput.value) {
+        recalculateFields('length');
+      } else if (piecesInput.value) {
+        recalculateFields('pieces');
+      }
+    });
+
+    // При изменении варианта оцинковки - пересчитать
+    document.getElementById('zinc-option-select')?.addEventListener('change', () => {
+      console.log('🔄 Вариант оцинковки изменён, запускаем пересчёт');
+      // Пересчитать от того поля которое заполнено
+      if (weightInput.value) {
+        recalculateFields('weight');
+      } else if (lengthInput.value) {
+        recalculateFields('length');
+      } else if (piecesInput.value) {
+        recalculateFields('pieces');
+      }
+    });
+
+    // При изменении стандарта для Листа ПВ - пересчитать
+    document.getElementById('standard-select')?.addEventListener('change', () => {
+      console.log('🔄 Стандарт (ТУ) изменён, запускаем пересчёт');
+      // Пересчитать от того поля которое заполнено
+      if (weightInput.value) {
+        recalculateFields('weight');
+      } else if (lengthInput.value) {
+        recalculateFields('length');
+      } else if (piecesInput.value) {
+        recalculateFields('pieces');
+      }
+    });
+
+    // При изменении марки стали для других типов металлов - пересчитать
+    document.getElementById('steel-type-select')?.addEventListener('change', () => {
+      console.log('🔄 Марка стали изменена, запускаем пересчёт');
       // Пересчитать от того поля которое заполнено
       if (weightInput.value) {
         recalculateFields('weight');
