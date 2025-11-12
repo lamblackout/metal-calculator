@@ -688,6 +688,7 @@
     let debounceTimer = null;   // Таймер для debounce
     let inputPriority = null;   // Приоритет: 'weight', 'length', 'pieces' - какое поле ввели первым
     let isUpdating = false;     // Флаг для отслеживания программных обновлений полей (не от пользователя)
+    let isRecalculatingFromMaterialChange = false;  // Флаг: изменение марки стали/оцинковки (не пересчитывать штуки!)
 
     // Получить ссылки на поля
     const weightInput = document.getElementById('input-weight');
@@ -983,11 +984,17 @@
               }
             }
 
-            if (sourceField !== 'pieces' && result.actual.pieces !== null) {
+            // ⚠️ КРИТИЧЕСКИ ВАЖНО: НЕ обновляем штуки при изменении марки стали/оцинковки!
+            // Это предотвращает бесконечный рост штук из-за округления вверх
+            if (sourceField !== 'pieces' && result.actual.pieces !== null && !isRecalculatingFromMaterialChange) {
               piecesInput.value = result.actual.pieces;
               console.log('✅ Pieces заполнен:', piecesInput.value);
             } else {
-              console.log('❌ Pieces НЕ заполнен! sourceField:', sourceField, 'pieces:', result.actual ? result.actual.pieces : 'undefined');
+              if (isRecalculatingFromMaterialChange) {
+                console.log('⚠️ Pieces НЕ обновлены! Изменение марки стали/оцинковки - штуки остаются неизменными');
+              } else {
+                console.log('❌ Pieces НЕ заполнен! sourceField:', sourceField, 'pieces:', result.actual ? result.actual.pieces : 'undefined');
+              }
             }
           } finally {
             // ⚠️ СНИМАЕМ ФЛАГ: программное обновление завершено
@@ -1544,6 +1551,30 @@
       });
     }
 
+    // При изменении марки стали - пересчитать ТОЛЬКО ВЕС (НЕ штуки!)
+    const steelTypeSelect = document.getElementById('steel-type-select');
+    if (steelTypeSelect) {
+      steelTypeSelect.addEventListener('change', () => {
+        console.log('🔄 Марка стали изменена, пересчитываю ТОЛЬКО вес (штуки НЕ трогаем)...');
+
+        // ⚠️ ВАЖНО: Устанавливаем флаг, чтобы НЕ пересчитывать штуки!
+        isRecalculatingFromMaterialChange = true;
+
+        try {
+          if (weightInput.value) {
+            recalculateFields('weight');
+          } else if (lengthInput.value) {
+            recalculateFields('length');
+          } else if (piecesInput.value) {
+            recalculateFields('pieces');
+          }
+        } finally {
+          // ⚠️ ВАЖНО: Сбрасываем флаг после пересчёта
+          isRecalculatingFromMaterialChange = false;
+        }
+      });
+    }
+
     // При изменении типа рифления (Лист рифленый) - пересчитать
     const riffleTypeSelect = document.getElementById('riffle-type-select');
     if (riffleTypeSelect) {
@@ -1561,19 +1592,28 @@
       });
     }
 
-    // При изменении опции цинкования - пересчитать
+    // При изменении опции цинкования - пересчитать ТОЛЬКО ВЕС (НЕ штуки!)
     const zincOptionSelect = document.getElementById('zinc-option-select');
     if (zincOptionSelect) {
       zincOptionSelect.addEventListener('change', () => {
-        console.log('🔄 Опция цинкования изменена, пересчитываю...');
-        if (weightInput.value) {
-          recalculateFields('weight');
-        } else if (lengthInput.value) {
-          recalculateFields('length');
-        } else if (piecesInput.value) {
-          recalculateFields('pieces');
+        console.log('🔄 Опция цинкования изменена, пересчитываю ТОЛЬКО вес (штуки НЕ трогаем)...');
+
+        // ⚠️ ВАЖНО: Устанавливаем флаг, чтобы НЕ пересчитывать штуки!
+        isRecalculatingFromMaterialChange = true;
+
+        try {
+          if (weightInput.value) {
+            recalculateFields('weight');
+          } else if (lengthInput.value) {
+            recalculateFields('length');
+          } else if (piecesInput.value) {
+            recalculateFields('pieces');
+          }
+          // areaInput удалён
+        } finally {
+          // ⚠️ ВАЖНО: Сбрасываем флаг после пересчёта
+          isRecalculatingFromMaterialChange = false;
         }
-        // areaInput удалён
       });
     }
 
