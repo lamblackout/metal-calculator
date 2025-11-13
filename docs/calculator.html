@@ -354,7 +354,7 @@
             >
           </div>
 
-          <div class="form-group flex-1">
+          <div class="form-group flex-1" id="field-pieces">
             <label for="input-pieces">
               🔢 Количество
               <span class="field-hint">штуки</span>
@@ -1283,8 +1283,7 @@
         metalType === 'sheet_painted' ||   // Лист/рулон окраш.
         metalType === 'sheet_pv' ||        // Лист ПВ
         metalType === 'sheet_pv_galv' ||   // Лист ПВ оцинк.
-        metalType === 'sheet_checkered' || // Лист рифленый
-        metalType === 'plate'              // Плита
+        metalType === 'sheet_checkered'    // Лист рифленый
       );
 
       // ===== ПОКАЗАТЬ ИЛИ СКРЫТЬ ПОЛЯ =====
@@ -1328,6 +1327,20 @@
           console.log('❌ Скрываем поле "Длина 1 шт." для', metalType);
           fieldLengthPerPiece.style.display = 'none';
           lengthPerPieceInput.value = '';  // Очищаем значение
+        }
+      }
+
+      // ===== ПОКАЗАТЬ/СКРЫТЬ ПОЛЕ "КОЛИЧЕСТВО ШТУК" =====
+      // Для Плиты поле "Количество штук" не нужно (площадь не делится на штуки)
+      const fieldPieces = document.getElementById('field-pieces');
+      if (fieldPieces) {
+        if (metalType === 'plate') {
+          console.log('❌ Скрываем поле "Количество штук" для', metalType);
+          fieldPieces.style.display = 'none';
+          piecesInput.value = '';  // Очищаем значение
+        } else {
+          console.log('✅ Показываем поле "Количество штук" для', metalType);
+          fieldPieces.style.display = 'block';
         }
       }
     }
