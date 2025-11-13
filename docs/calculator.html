@@ -888,7 +888,7 @@
 
         // 1. МАРКА СТАЛИ (для стандартных типов)
         const typesWithSteel = ['circle', 'circle_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
-                                'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold'];
+                                'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate'];
         if (typesWithSteel.includes(metalType)) {
           const steelTypeSelect = document.getElementById('steel-type-select');
           if (steelTypeSelect && steelTypeSelect.value) {
@@ -1090,7 +1090,7 @@
 
       // === МАРКА СТАЛИ (для стандартных типов) ===
       const typesWithSteel = ['circle', 'circle_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
-                              'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold'];
+                              'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate'];
       // Поддержка обоих вариантов названий полей
       const steelList = metal.steelGrades || metal.steelTypes;
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
@@ -1283,7 +1283,8 @@
         metalType === 'sheet_painted' ||   // Лист/рулон окраш.
         metalType === 'sheet_pv' ||        // Лист ПВ
         metalType === 'sheet_pv_galv' ||   // Лист ПВ оцинк.
-        metalType === 'sheet_checkered'    // Лист рифленый
+        metalType === 'sheet_checkered' || // Лист рифленый
+        metalType === 'plate'              // Плита
       );
 
       // ===== ПОКАЗАТЬ ИЛИ СКРЫТЬ ПОЛЯ =====
