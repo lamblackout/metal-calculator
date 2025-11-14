@@ -887,7 +887,7 @@
         // ===== НОВАЯ ЛОГИКА: ПЕРЕДАЧА ПАРАМЕТРОВ МАТЕРИАЛА =====
 
         // 1. МАРКА СТАЛИ (для стандартных типов)
-        const typesWithSteel = ['circle', 'circle_galv', 'strip', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
+        const typesWithSteel = ['circle', 'circle_galv', 'strip', 'strip_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
                                 'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate'];
         if (typesWithSteel.includes(metalType)) {
           const steelTypeSelect = document.getElementById('steel-type-select');

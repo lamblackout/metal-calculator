@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-14T13:37:25.366Z
+// Собрано: 2025-11-14T15:25:49.699Z
 // ==========================================
 
 (function(window) {
@@ -509,6 +509,42 @@ function calculateMetal(params, metalDatabase) {
       // Вес 1 метра (кг) = коэффициент × плотность_стали
       // Коэффициент = ширина×толщина/1000, плотность в г/см³
       weightPerMeter = coefficient * steelDensity;
+    } else if (metal.formula === 'strip_galv_linear') {
+      // ✅ ПОЛОСА ОЦИНКОВАННАЯ - коэффициент × плотность стали × 1.03
+      // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³ × 1.03
+      // где коэффициент = ширина_мм × толщина_мм / 1000
+      const sizeStr = String(params.size);
+      steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
+
+      // Получаем коэффициент (ширина × толщина / 1000)
+      const coefficient = metal.weights?.[sizeStr];
+
+      // Поддержка обоих вариантов названий полей для плотности стали
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      const steelDensity = steelCoefs?.[steelType];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для полосы оцинкованной`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!steelDensity) {
+        return {
+          success: false,
+          error: `Марка стали '${steelType}' не найдена в базе данных`,
+          metalType: params.metalType,
+          size: params.size,
+          steelType: steelType
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × плотность_стали × 1.03 (оцинковка +3%)
+      const zincMultiplier = metal.zincPercentage ? (1 + metal.zincPercentage / 100) : 1.03;
+      weightPerMeter = coefficient * steelDensity * zincMultiplier;
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
