@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-14T12:13:48.487Z
+// Собрано: 2025-11-14T13:37:25.366Z
 // ==========================================
 
 (function(window) {
@@ -474,18 +474,18 @@ function calculateMetal(params, metalDatabase) {
       // Коэффициент уже в кг/м², учитываем марку стали
       weightPerMeter = coefficient * (steelDensity / baseDensity);
     } else if (metal.formula === 'strip_linear') {
-      // ✅ ПОЛОСА - коэффициент (кг/м) умножается на марку стали
-      // Формула: Вес (т) = коэффициент × длина_м × (плотность_стали / 7.85) / 1000
+      // ✅ ПОЛОСА - коэффициент умножается на плотность стали
+      // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
+      // где коэффициент = ширина_мм × толщина_мм / 1000
       const sizeStr = String(params.size);
       steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
 
-      // Получаем коэффициент (вес 1 м при стали ст3)
+      // Получаем коэффициент (ширина × толщина / 1000)
       const coefficient = metal.weights?.[sizeStr];
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
       const steelDensity = steelCoefs?.[steelType];
-      const baseDensity = 7.85; // Базовая плотность (ст3)
 
       if (!coefficient) {
         return {
@@ -506,9 +506,9 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // Вес 1 метра (кг) = коэффициент × (плотность_стали / базовая_плотность)
-      // Коэффициент уже в кг/м, учитываем марку стали
-      weightPerMeter = coefficient * (steelDensity / baseDensity);
+      // Вес 1 метра (кг) = коэффициент × плотность_стали
+      // Коэффициент = ширина×толщина/1000, плотность в г/см³
+      weightPerMeter = coefficient * steelDensity;
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
