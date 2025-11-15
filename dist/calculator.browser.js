@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-15T09:29:12.038Z
+// Собрано: 2025-11-15T09:41:29.540Z
 // ==========================================
 
 (function(window) {
@@ -282,8 +282,9 @@ function calculateMetal(params, metalDatabase) {
       };
     }
 
-    // Проверить размер
-    if (params.size === undefined || params.size === null) {
+    // Проверить размер (КРОМЕ профнастила, для которого нужны profileType и variant)
+    const isProfnastil = params.metalType === 'profnastil_okrash' || params.metalType === 'profnastil_ocink';
+    if (!isProfnastil && (params.size === undefined || params.size === null)) {
       return {
         success: false,
         error: 'Не указан размер металла (size)',
@@ -638,6 +639,65 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент × плотность_стали × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * steelDensity * 1.03;
+    } else if (metal.formula === 'profnastil_area') {
+      // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
+      // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
+
+      const profileType = params.profileType;
+      const variant = params.variant;
+
+      // Проверка типа профиля
+      if (!profileType || !metal.variants || !metal.variants[profileType]) {
+        return {
+          success: false,
+          error: `Тип профиля '${profileType}' не найден`,
+          metalType: params.metalType,
+          profileType: profileType
+        };
+      }
+
+      // Находим вариант (размер + стандарт)
+      const variantData = metal.variants[profileType].find(v => v.name === variant);
+      if (!variantData) {
+        return {
+          success: false,
+          error: `Вариант '${variant}' не найден для профиля '${profileType}'`,
+          metalType: params.metalType,
+          profileType: profileType,
+          variant: variant
+        };
+      }
+
+      const coefficient = variantData.coefficient; // кг/м²
+
+      // Площадь: либо напрямую, либо через размеры листа
+      let area;
+      if (params.area && params.area > 0) {
+        area = params.area;
+      } else if (params.width && params.length) {
+        const quantity = params.quantityPieces || 1;
+        area = params.width * params.length * quantity;
+      } else {
+        return {
+          success: false,
+          error: 'Необходимо указать площадь или размеры листа (ширина × длина)',
+          metalType: params.metalType
+        };
+      }
+
+      // Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
+      const weight = (coefficient * area) / 1000;
+
+      return {
+        success: true,
+        weight: parseFloat(weight.toFixed(3)),
+        weightPerMeter: null, // Для профнастила нет веса на метр
+        metalType: params.metalType,
+        profileType: profileType,
+        variant: variant,
+        coefficient: coefficient,
+        area: area
+      };
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000

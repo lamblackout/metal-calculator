@@ -225,6 +225,24 @@
           <p class="text-xs text-gray-500 mt-1">Марка стали влияет на плотность и вес металла</p>
         </div>
 
+        <!-- Поле: Тип профиля (для Профнастила) -->
+        <div id="field-profile-type" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Тип профиля</label>
+          <select id="profile-type-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white" onchange="updateVariantsForProfile()">
+            <option value="">-- Выберите тип профиля --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Тип профиля определяет доступные варианты</p>
+        </div>
+
+        <!-- Поле: Вариант (для Профнастила) -->
+        <div id="field-variant" class="hidden">
+          <label class="block text-sm font-semibold text-gray-700 mb-2">Вариант (размер + стандарт)</label>
+          <select id="variant-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
+            <option value="">-- Сначала выберите тип профиля --</option>
+          </select>
+          <p class="text-xs text-gray-500 mt-1">Вариант включает толщину, ширину и стандарт</p>
+        </div>
+
       </div>
       <!-- ===== КОНЕЦ БЛОКА: ДИНАМИЧЕСКИЕ ПОЛЯ МАТЕРИАЛА ===== -->
 
@@ -934,6 +952,20 @@
           }
         }
 
+        // 6. ТИП ПРОФИЛЯ И ВАРИАНТ (для Профнастила)
+        if (metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') {
+          const profileTypeSelect = document.getElementById('profile-type-select');
+          const variantSelect = document.getElementById('variant-select');
+          if (profileTypeSelect && profileTypeSelect.value) {
+            params.profileType = profileTypeSelect.value;
+            console.log('  ✅ profileType:', params.profileType);
+          }
+          if (variantSelect && variantSelect.value) {
+            params.variant = variantSelect.value;
+            console.log('  ✅ variant:', params.variant);
+          }
+        }
+
         // ===== СТАРАЯ ЛОГИКА (для обратной совместимости с катанкой) =====
         const katankaFields = document.getElementById('katanka-fields');
         if (metalType === 'wire_rod' && !katankaFields.classList.contains('hidden')) {
@@ -1210,6 +1242,30 @@
         }
       }
 
+      // === ТИП ПРОФИЛЯ И ВАРИАНТ (для Профнастила) ===
+      if ((metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') && metal.profileTypes && metal.variants) {
+        const fieldProfileType = document.getElementById('field-profile-type');
+        const fieldVariant = document.getElementById('field-variant');
+        const profileTypeSelect = document.getElementById('profile-type-select');
+        const variantSelect = document.getElementById('variant-select');
+
+        // Заполнить селект типами профиля
+        profileTypeSelect.innerHTML = '<option value="">-- Выберите тип профиля --</option>';
+        metal.profileTypes.forEach(profileType => {
+          const option = document.createElement('option');
+          option.value = profileType;
+          const variantsCount = metal.variants[profileType] ? metal.variants[profileType].length : 0;
+          option.textContent = `${profileType} (${variantsCount} вариантов)`;
+          profileTypeSelect.appendChild(option);
+        });
+
+        // Показать поле типа профиля
+        fieldProfileType.classList.remove('hidden');
+        fieldVariant.classList.remove('hidden');
+        hasAnyField = true;
+        console.log(`  ✅ Показаны поля "Тип профиля" и "Вариант" для профнастила`);
+      }
+
       // 3. Показать/скрыть контейнер
       if (hasAnyField) {
         container.classList.remove('hidden');
@@ -1218,6 +1274,42 @@
         container.classList.add('hidden');
         console.log('  ⚠️  Контейнер material-properties-container скрыт (нет полей для отображения)');
       }
+    }
+
+    /**
+     * Обновить список вариантов при выборе типа профиля (для Профнастила)
+     */
+    function updateVariantsForProfile() {
+      const metalType = document.getElementById('metal-type').value;
+      const profileTypeSelect = document.getElementById('profile-type-select');
+      const variantSelect = document.getElementById('variant-select');
+      const profileType = profileTypeSelect.value;
+
+      console.log('🔄 updateVariantsForProfile вызвана для профиля:', profileType);
+
+      if (!profileType) {
+        variantSelect.innerHTML = '<option value="">-- Сначала выберите тип профиля --</option>';
+        return;
+      }
+
+      // Получить данные металла
+      const metal = window.METAL_DATABASE.metals[metalType];
+      if (!metal || !metal.variants || !metal.variants[profileType]) {
+        console.error('❌ Ошибка: варианты не найдены для профиля', profileType);
+        variantSelect.innerHTML = '<option value="">-- Ошибка: варианты не найдены --</option>';
+        return;
+      }
+
+      // Заполнить селект вариантами
+      variantSelect.innerHTML = '<option value="">-- Выберите вариант --</option>';
+      metal.variants[profileType].forEach(variant => {
+        const option = document.createElement('option');
+        option.value = variant.name;
+        option.textContent = `${variant.name} (${variant.coefficient} кг/м²)`;
+        variantSelect.appendChild(option);
+      });
+
+      console.log(`  ✅ Загружено ${metal.variants[profileType].length} вариантов для ${profileType}`);
     }
 
     /**
