@@ -888,7 +888,7 @@
 
         // 1. МАРКА СТАЛИ (для стандартных типов)
         const typesWithSteel = ['circle', 'circle_galv', 'strip', 'strip_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
-                                'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate', 'wire'];
+                                'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate', 'wire', 'wire_galv'];
         if (typesWithSteel.includes(metalType)) {
           const steelTypeSelect = document.getElementById('steel-type-select');
           if (steelTypeSelect && steelTypeSelect.value) {
@@ -1089,8 +1089,8 @@
       // 2. Определить какие поля показать для данного типа
 
       // === МАРКА СТАЛИ (для стандартных типов) ===
-      const typesWithSteel = ['circle', 'circle_galv', 'strip', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
-                              'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate'];
+      const typesWithSteel = ['circle', 'circle_galv', 'strip', 'strip_galv', 'strip_tape', 'strip_tape_painted', 'strip_tape_galv',
+                              'sheet_hot', 'sheet_painted', 'sheet_galv', 'sheet_cold', 'plate', 'wire', 'wire_galv'];
       // Поддержка обоих вариантов названий полей
       const steelList = metal.steelGrades || metal.steelTypes;
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
