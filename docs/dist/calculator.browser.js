@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-14T15:25:49.699Z
+// Собрано: 2025-11-15T08:48:04.685Z
 // ==========================================
 
 (function(window) {
@@ -545,6 +545,27 @@ function calculateMetal(params, metalDatabase) {
       // Вес 1 метра (кг) = коэффициент × плотность_стали × 1.03 (оцинковка +3%)
       const zincMultiplier = metal.zincPercentage ? (1 + metal.zincPercentage / 100) : 1.03;
       weightPerMeter = coefficient * steelDensity * zincMultiplier;
+    } else if (metal.formula === 'polosobulb_linear') {
+      // ✅ ПОЛОСОБУЛЬБ - простая линейная формула БЕЗ марок стали
+      // Формула: Вес (т) = коэффициент (т/м) × длина (м)
+      // Коэффициент уже в т/м, поэтому просто умножаем на длину
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (т/м)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для полособульба`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес (т) = коэффициент (т/м) × длина (м)
+      // Коэффициент в т/м, переводим в кг/м для единообразия с другими типами
+      weightPerMeter = coefficient * 1000; // т/м → кг/м
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
