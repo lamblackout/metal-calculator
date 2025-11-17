@@ -23,18 +23,18 @@ const test1 = calculateMetal({
 console.log('Параметры:');
 console.log('  Размер: 5');
 console.log('  Длина: 100 м');
-console.log('  Коэффициент: 0.286624203822 т/м\n');
+console.log('  Коэффициент: 0.286624203822\n');
 
 console.log('Результат:');
 console.log(`  weightPerMeter (вес 1 м): ${test1.weightPerMeter} кг`);
 console.log(`  weight (вес): ${test1.weight} т\n`);
 
 console.log('Расчёт:');
-console.log('  вес = 0.286624203822 × 100 = 28.6624203822 т\n');
+console.log('  вес = 0.286624203822 × 100 × 7.85 / 1000 = 0.225 т\n');
 
-const expected1 = 28.662;  // Округлено до 3 знаков
+const expected1 = 0.225;  // 0.286624203822 × 100 × 7.85 / 1000
 const diff1 = Math.abs(test1.weight - expected1);
-console.log(`Ожидается: ~${expected1} т (округлено с 28.6624203822)`);
+console.log(`Ожидается: ~${expected1} т`);
 console.log(`Получено: ${test1.weight} т`);
 console.log(`📊 Статус: ${diff1 < 0.001 ? '✅ PASSED' : '❌ FAILED'}\n`);
 
@@ -54,18 +54,18 @@ const test2 = calculateMetal({
 console.log('Параметры:');
 console.log('  Размер: 8');
 console.log('  Длина: 1000 м');
-console.log('  Коэффициент: 0.583439490446 т/м\n');
+console.log('  Коэффициент: 0.583439490446\n');
 
 console.log('Результат:');
 console.log(`  weightPerMeter (вес 1 м): ${test2.weightPerMeter} кг`);
 console.log(`  weight (вес): ${test2.weight} т\n`);
 
 console.log('Расчёт:');
-console.log('  вес = 0.583439490446 × 1000 = 583.439490446 т\n');
+console.log('  вес = 0.583439490446 × 1000 × 7.85 / 1000 = 4.580 т\n');
 
-const expected2 = 583.439;  // Округлено до 3 знаков
+const expected2 = 4.580;  // 0.583439490446 × 1000 × 7.85 / 1000
 const diff2 = Math.abs(test2.weight - expected2);
-console.log(`Ожидается: ~${expected2} т (округлено с 583.439490446)`);
+console.log(`Ожидается: ~${expected2} т`);
 console.log(`Получено: ${test2.weight} т`);
 console.log(`📊 Статус: ${diff2 < 0.001 ? '✅ PASSED' : '❌ FAILED'}\n`);
 
@@ -85,18 +85,18 @@ const test3 = calculateMetal({
 console.log('Параметры:');
 console.log('  Размер: 12');
 console.log('  Длина: 50 м');
-console.log('  Коэффициент: 1.114649681529 т/м\n');
+console.log('  Коэффициент: 1.114649681529\n');
 
 console.log('Результат:');
 console.log(`  weightPerMeter (вес 1 м): ${test3.weightPerMeter} кг`);
 console.log(`  weight (вес): ${test3.weight} т\n`);
 
 console.log('Расчёт:');
-console.log('  вес = 1.114649681529 × 50 = 55.73248407645 т\n');
+console.log('  вес = 1.114649681529 × 50 × 7.85 / 1000 = 0.438 т\n');
 
-const expected3 = 55.732;  // Округлено до 3 знаков
+const expected3 = 0.438;  // 1.114649681529 × 50 × 7.85 / 1000
 const diff3 = Math.abs(test3.weight - expected3);
-console.log(`Ожидается: ~${expected3} т (округлено с 55.73248407645)`);
+console.log(`Ожидается: ~${expected3} т`);
 console.log(`Получено: ${test3.weight} т`);
 console.log(`📊 Статус: ${diff3 < 0.001 ? '✅ PASSED' : '❌ FAILED'}\n`);
 
@@ -116,18 +116,18 @@ const test4 = calculateMetal({
 console.log('Параметры:');
 console.log('  Размер: 24б');
 console.log('  Длина: 10 м');
-console.log('  Коэффициент: 4.354140127388 т/м\n');
+console.log('  Коэффициент: 4.354140127388\n');
 
 console.log('Результат:');
 console.log(`  weightPerMeter (вес 1 м): ${test4.weightPerMeter} кг`);
 console.log(`  weight (вес): ${test4.weight} т\n`);
 
 console.log('Расчёт:');
-console.log('  вес = 4.354140127388 × 10 = 43.54140127388 т\n');
+console.log('  вес = 4.354140127388 × 10 × 7.85 / 1000 = 0.342 т\n');
 
-const expected4 = 43.541;  // Округлено до 3 знаков
+const expected4 = 0.342;  // 4.354140127388 × 10 × 7.85 / 1000
 const diff4 = Math.abs(test4.weight - expected4);
-console.log(`Ожидается: ~${expected4} т (округлено с 43.54140127388)`);
+console.log(`Ожидается: ~${expected4} т`);
 console.log(`Получено: ${test4.weight} т`);
 console.log(`📊 Статус: ${diff4 < 0.001 ? '✅ PASSED' : '❌ FAILED'}\n`);
 
@@ -147,18 +147,18 @@ const test5 = calculateMetal({
 console.log('Параметры:');
 console.log('  Размер: 271010');
 console.log('  Длина: 20 м');
-console.log('  Коэффициент: 4.175796178344 т/м\n');
+console.log('  Коэффициент: 4.175796178344\n');
 
 console.log('Результат:');
 console.log(`  weightPerMeter (вес 1 м): ${test5.weightPerMeter} кг`);
 console.log(`  weight (вес): ${test5.weight} т\n`);
 
 console.log('Расчёт:');
-console.log('  вес = 4.175796178344 × 20 = 83.51592356688 т\n');
+console.log('  вес = 4.175796178344 × 20 × 7.85 / 1000 = 0.656 т\n');
 
-const expected5 = 83.516;  // Округлено до 3 знаков
+const expected5 = 0.656;  // 4.175796178344 × 20 × 7.85 / 1000
 const diff5 = Math.abs(test5.weight - expected5);
-console.log(`Ожидается: ~${expected5} т (округлено с 83.51592356688)`);
+console.log(`Ожидается: ~${expected5} т`);
 console.log(`Получено: ${test5.weight} т`);
 console.log(`📊 Статус: ${diff5 < 0.001 ? '✅ PASSED' : '❌ FAILED'}\n`);
 

@@ -308,12 +308,12 @@ function calculateMetal(params, metalDatabase) {
       const zincMultiplier = metal.zincPercentage ? (1 + metal.zincPercentage / 100) : 1.03;
       weightPerMeter = coefficient * steelDensity * zincMultiplier;
     } else if (metal.formula === 'polosobulb_linear') {
-      // ✅ ПОЛОСОБУЛЬБ - простая линейная формула БЕЗ марок стали
-      // Формула: Вес (т) = коэффициент (т/м) × длина (м)
-      // Коэффициент уже в т/м, поэтому просто умножаем на длину
+      // ✅ ПОЛОСОБУЛЬБ - линейная формула с плотностью стали
+      // Формула: Вес (т) = коэффициент × длина (м) × 7.85 / 1000
+      // где 7.85 - плотность стали ст3 (г/см³ или кг/дм³)
       const sizeStr = String(params.size);
 
-      // Получаем коэффициент (т/м)
+      // Получаем коэффициент
       const coefficient = metal.weights?.[sizeStr];
 
       if (!coefficient) {
@@ -325,9 +325,9 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // Вес (т) = коэффициент (т/м) × длина (м)
-      // Коэффициент в т/м, переводим в кг/м для единообразия с другими типами
-      weightPerMeter = coefficient * 1000; // т/м → кг/м
+      // Вес 1 метра (кг) = коэффициент × 7.85
+      // (результат делится на 1000 при умножении на длину для получения тонн)
+      weightPerMeter = coefficient * 7.85;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
