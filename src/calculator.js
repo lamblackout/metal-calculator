@@ -388,6 +388,46 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент (т/м) × 1000
       weightPerMeter = coefficient * 1000;
+    } else if (metal.formula === 'gd_linear') {
+      // ✅ ТРУБА Б/Ш Г/Д (бесшовная горячедеформированная) - линейная формула
+      // Формула: Вес (т) = коэффициент × длина (м)
+      // где коэффициент - вес 1 метра трубы (т/м)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (вес 1 метра в тоннах)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000
+      weightPerMeter = coefficient * 1000;
+    } else if (metal.formula === 'gd_galv_linear') {
+      // ✅ ТРУБА Б/Ш Г/Д ОЦИНКОВАННАЯ - линейная формула с оцинковкой
+      // Формула: Вес (т) = коэффициент × длина (м) × 1.03
+      // где коэффициент - вес 1 метра обычной трубы (т/м), 1.03 - коэффициент оцинковки (+3%)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (вес 1 метра в тоннах для обычной трубы)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000 × 1.03 (оцинковка +3%)
+      weightPerMeter = coefficient * 1000 * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
