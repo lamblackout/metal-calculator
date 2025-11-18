@@ -328,6 +328,46 @@ function calculateMetal(params, metalDatabase) {
       // Вес 1 метра (кг) = коэффициент × 7.85
       // (результат делится на 1000 при умножении на длину для получения тонн)
       weightPerMeter = coefficient * 7.85;
+    } else if (metal.formula === 'tryba_kvadr_linear') {
+      // ✅ ТРУБА КВАДРАТНАЯ (обычная) - линейная формула с плотностью стали
+      // Формула: Вес (т) = коэффициент × длина (м) × 7.85 / 1000
+      // где 7.85 - плотность стали ст3
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (площадь сечения)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85
+      weightPerMeter = coefficient * 7.85;
+    } else if (metal.formula === 'tryba_kvadr_galv_linear') {
+      // ✅ ТРУБА КВАДРАТНАЯ ОЦИНКОВАННАЯ - линейная формула с плотностью стали и оцинковкой
+      // Формула: Вес (т) = коэффициент × длина (м) × 7.85 × 1.03 / 1000
+      // где 7.85 - плотность стали ст3, 1.03 - коэффициент оцинковки (+3%)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (площадь сечения)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
+      weightPerMeter = coefficient * 7.85 * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
