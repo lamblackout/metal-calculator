@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-18T15:48:43.978Z
+// Собрано: 2025-11-18T18:25:43.591Z
 // ==========================================
 
 (function(window) {
@@ -852,6 +852,86 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент (т/м) × 1000
       weightPerMeter = coefficient * 1000;
+    } else if (metal.formula === 'shpynt_3fields') {
+      // ✅ ШПУНТ - специальный 3-полевой калькулятор
+      // Формула: тонны ↔ метры ↔ кв. метры
+      // При изменении любого поля автоматически пересчитываются остальные два
+
+      const sizeStr = String(params.size);
+
+      // Получаем два коэффициента
+      const coefficient = metal.coefficients?.[sizeStr]; // кг/м
+      const coefficientPerSqm = metal.coefficientsPerSqm?.[sizeStr]; // кг/м²
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер '${sizeStr}' не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!coefficientPerSqm) {
+        return {
+          success: false,
+          error: `Коэффициент площади для размера '${sizeStr}' не найден`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Определяем, какой параметр был задан, и рассчитываем остальные два
+      let weight = null;
+      let length = null;
+      let area = null;
+
+      if (params.weight) {
+        // Задан вес → рассчитываем длину и площадь
+        weight = params.weight; // т
+        // Формула 3: длина (м) = вес (т) × 1000 / coefficient
+        length = (weight * 1000) / coefficient;
+        // Формула 6: площадь (м²) = вес (т) × 1000 / coefficientPerSqm
+        area = (weight * 1000) / coefficientPerSqm;
+
+      } else if (params.length) {
+        // Задана длина → рассчитываем вес и площадь
+        length = params.length; // м
+        // Формула 1: вес (т) = длина (м) × coefficient / 1000
+        weight = (length * coefficient) / 1000;
+        // Формула 2: площадь (м²) = длина (м) × coefficient / coefficientPerSqm
+        area = (length * coefficient) / coefficientPerSqm;
+
+      } else if (params.area) {
+        // Задана площадь → рассчитываем вес и длину
+        area = params.area; // м²
+        // Формула 5: вес (т) = площадь (м²) × coefficientPerSqm / 1000
+        weight = (area * coefficientPerSqm) / 1000;
+        // Формула 4: длина (м) = площадь (м²) × coefficientPerSqm / coefficient
+        length = (area * coefficientPerSqm) / coefficient;
+
+      } else {
+        return {
+          success: false,
+          error: 'Для шпунта необходимо указать weight, length или area',
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Возвращаем результат со всеми тремя полями
+      return {
+        success: true,
+        weight: parseFloat(weight.toFixed(3)),
+        length: parseFloat(length.toFixed(2)),
+        area: parseFloat(area.toFixed(3)),
+        metalType: params.metalType,
+        size: params.size,
+        coefficient: coefficient, // кг/м
+        coefficientPerSqm: coefficientPerSqm, // кг/м²
+        gost: metal.gost || 'ГОСТ',
+        category: metal.category || 'shpynt'
+      };
     } else if (metal.formula === 'profnastil_area') {
       // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
       // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
