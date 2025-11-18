@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-18T08:56:50.047Z
+// Собрано: 2025-11-18T15:33:30.992Z
 // ==========================================
 
 (function(window) {
@@ -779,6 +779,44 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент × плотность_стали × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * steelDensity * 1.03;
+    } else if (metal.formula === 'sytynka_steel') {
+      // ✅ СУТУНКА - линейная формула с марками стали
+      // Формула: Вес (т) = коэффициент (кг/м) × длина (м) × плотность_стали (т/м³) / 1000
+      // где коэффициент 30 кг/м указан для стали ст3 (плотность 7.85 т/м³)
+      // Для других марок: вес_1м = 30 × (плотность_стали / 7.85)
+      const sizeStr = String(params.size);
+      steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
+
+      // Получаем коэффициент (кг/м для стали ст3)
+      const coefficient = metal.coefficients?.[sizeStr];
+
+      // Поддержка обоих вариантов названий полей для плотности стали
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      const steelDensity = steelCoefs?.[steelType];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!steelDensity) {
+        return {
+          success: false,
+          error: `Марка стали '${steelType}' не найдена в базе данных`,
+          metalType: params.metalType,
+          size: params.size,
+          steelType: steelType
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (дм²) × плотность_стали (т/м³)
+      // Формула: вес (т) = коэффициент × длина (м) × плотность_стали / 1000
+      // => вес_1м (кг) = коэффициент × плотность_стали
+      weightPerMeter = coefficient * steelDensity;
     } else if (metal.formula === 'profnastil_area') {
       // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
       // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
