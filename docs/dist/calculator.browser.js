@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-18T07:42:30.757Z
+// Собрано: 2025-11-18T08:36:09.393Z
 // ==========================================
 
 (function(window) {
@@ -607,6 +607,26 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * 7.85 * 1.03;
+    } else if (metal.formula === 'pnd_linear') {
+      // ✅ ТРУБА ПНД (полиэтиленовая труба низкого давления) - линейная формула
+      // Формула: Вес (т) = коэффициент × длина (м)
+      // где коэффициент - вес 1 метра трубы (т/м)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент (вес 1 метра в тоннах)
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000
+      weightPerMeter = coefficient * 1000;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
