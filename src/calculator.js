@@ -459,6 +459,47 @@ function calculateMetal(params, metalDatabase) {
         coefficient: coefficient,
         area: area
       };
+    } else if (metal.formula === 'linear') {
+      // ✅ ЛИНЕЙНАЯ ФОРМУЛА (для труб квадратных обычных)
+      // Формула: Вес (т) = коэффициент (т/м) × длина (м)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 1000
+      // Коэффициент уже в т/м, умножаем на 1000 для получения кг/м
+      weightPerMeter = coefficient * 1000;
+    } else if (metal.formula === 'linear_galv') {
+      // ✅ ЛИНЕЙНАЯ ФОРМУЛА С ОЦИНКОВКОЙ (для труб квадратных оцинкованных)
+      // Формула: Вес (т) = коэффициент (т/м) × длина (м) × 1.03
+      // где 1.03 - это +3% на оцинковку
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 1000 × 1.03 (оцинковка +3%)
+      // Коэффициент уже в т/м, умножаем на 1000 для получения кг/м
+      weightPerMeter = coefficient * 1000 * 1.03;
     } else if (metal.weights && (metal.steelDensities || metal.steelCoefficients)) {
       // ✅ НОВАЯ ЛОГИКА ДЛЯ ТИПОВ С WEIGHTS И STEELCOEFFICIENTS (Круг, Лента, Лист и т.д.)
       // Формула для площадных с оцинковкой: Вес (т) = (calc_koef1 + calc_ocink_koef1) × м² × stal_koef / 1000
