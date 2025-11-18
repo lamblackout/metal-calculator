@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-18T15:33:30.991Z
+// Собрано: 2025-11-18T15:48:43.977Z
 // ==========================================
 
 // src/formulas.js
@@ -279,9 +279,10 @@ function calculateMetal(params, metalDatabase) {
       };
     }
 
-    // Проверить размер (КРОМЕ профнастила, для которого нужны profileType и variant)
+    // Проверить размер (КРОМЕ профнастила и рельсов, для которых нужны другие параметры)
     const isProfnastil = params.metalType === 'profnastil_okrash' || params.metalType === 'profnastil_ocink';
-    if (!isProfnastil && (params.size === undefined || params.size === null)) {
+    const isRels = params.metalType === 'rels';
+    if (!isProfnastil && !isRels && (params.size === undefined || params.size === null)) {
       return {
         success: false,
         error: 'Не указан размер металла (size)',
@@ -814,6 +815,40 @@ function calculateMetal(params, metalDatabase) {
       // Формула: вес (т) = коэффициент × длина (м) × плотность_стали / 1000
       // => вес_1м (кг) = коэффициент × плотность_стали
       weightPerMeter = coefficient * steelDensity;
+    } else if (metal.formula === 'rels_linear') {
+      // ✅ РЕЛЬС - линейная формула с вариантами стандартов
+      // Формула: Вес (т) = коэффициент (т/м) × длина (м)
+      // где коэффициент зависит от типа рельса и стандарта (ГОСТ, EN, AREMA, DIN, BS и т.д.)
+
+      const railType = params.railType;
+      const variant = params.variant;
+
+      // Проверка типа рельса
+      if (!railType || !metal.variants || !metal.variants[railType]) {
+        return {
+          success: false,
+          error: `Тип рельса '${railType}' не найден`,
+          metalType: params.metalType,
+          railType: railType
+        };
+      }
+
+      // Находим вариант (стандарт)
+      const variantData = metal.variants[railType].find(v => v.name === variant);
+      if (!variantData) {
+        return {
+          success: false,
+          error: `Стандарт '${variant}' не найден для рельса '${railType}'`,
+          metalType: params.metalType,
+          railType: railType,
+          variant: variant
+        };
+      }
+
+      const coefficient = variantData.coefficient; // т/м
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000
+      weightPerMeter = coefficient * 1000;
     } else if (metal.formula === 'profnastil_area') {
       // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
       // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
