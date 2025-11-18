@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-18T18:25:43.590Z
+// Собрано: 2025-11-18T18:41:45.891Z
 // ==========================================
 
 // src/formulas.js
@@ -705,6 +705,48 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент (т/м) × 1000 × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * 1000 * 1.03;
+    } else if (metal.formula === 'ygolok_gnyt_linear') {
+      // ✅ УГОЛОК ГНУТЫЙ - линейная формула с умножением на 7.85
+      // Формула: Вес (т) = (коэффициент × длина (м) × 7.85) / 1000
+      // ⚠️ ВАЖНО: С × 7.85! Это гнутый уголок!
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85
+      // С × 7.85! Это гнутый уголок!
+      weightPerMeter = coefficient * 7.85;
+    } else if (metal.formula === 'ygolok_gnyt_galv_linear') {
+      // ✅ УГОЛОК ГНУТЫЙ ОЦИНКОВАННЫЙ - линейная формула с умножением на 7.85 × 1.03
+      // Формула: Вес (т) = (коэффициент × длина (м) × 7.85 × 1.03) / 1000
+      // ⚠️ ВАЖНО: С × 7.85! Это гнутый уголок!
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
+      // С × 7.85! Это гнутый уголок!
+      weightPerMeter = coefficient * 7.85 * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
