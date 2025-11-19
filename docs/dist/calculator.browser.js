@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Browser
 // Версия: 1.0.0
-// Собрано: 2025-11-19T12:57:18.264Z
+// Собрано: 2025-11-19T13:02:56.412Z
 // ==========================================
 
 (function(window) {
@@ -1032,6 +1032,48 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент (т/м) × 1000 × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * 1000 * 1.03;
+    } else if (metal.formula === 'shveller_simple') {
+      // ✅ ШВЕЛЛЕР - простая формула БЕЗ × 7.85
+      // Формула: Вес (т) = (коэффициент × длина) / 1000
+      // где коэффициент - вес 1 метра (кг/м), плотность стали УЖЕ УЧТЕНА!
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (кг/м)
+      // БЕЗ × 7.85! Коэффициенты уже в кг/м
+      weightPerMeter = coefficient;
+    } else if (metal.formula === 'shveller_galv_simple') {
+      // ✅ ШВЕЛЛЕР ОЦИНКОВАННЫЙ - простая формула с оцинковкой БЕЗ × 7.85
+      // Формула: Вес (т) = (коэффициент × длина × 1.03) / 1000
+      // где коэффициент - вес 1 метра (кг/м), плотность стали УЖЕ УЧТЕНА!
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (кг/м) × 1.03 (оцинковка +3%)
+      // БЕЗ × 7.85! Коэффициенты уже в кг/м
+      weightPerMeter = coefficient * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
