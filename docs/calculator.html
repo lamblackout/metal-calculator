@@ -551,8 +551,32 @@
         totalCount++;
       }
 
-      // Сортируем категории по алфавиту
-      const sortedCategories = Object.keys(categories).sort();
+      // Канонический порядок категорий (21 группа)
+      const canonicalOrder = [
+        'Арматура', 'Балка', 'Канат', 'Катанка', 'Квадрат', 'Крепеж', 'Круг',
+        'Лента', 'Лист', 'Плита', 'Полоса', 'Полособульб', 'Проволока',
+        'Профнастил', 'Рельс', 'Сутунка', 'Труба', 'Уголок', 'Швеллер',
+        'Шестигранник', 'Шпунт'
+      ];
+
+      // Сортируем категории по каноническому порядку
+      const sortedCategories = Object.keys(categories).sort((a, b) => {
+        const indexA = canonicalOrder.indexOf(a);
+        const indexB = canonicalOrder.indexOf(b);
+
+        // Если обе категории в каноническом порядке
+        if (indexA !== -1 && indexB !== -1) {
+          return indexA - indexB;
+        }
+
+        // Категории не из канонического порядка - в конец, сортируем по алфавиту
+        if (indexA === -1 && indexB === -1) {
+          return a.localeCompare(b, 'ru');
+        }
+
+        // Канонические категории - в начало
+        return indexA !== -1 ? -1 : 1;
+      });
 
       // Создаём optgroups для каждой категории
       sortedCategories.forEach(category => {
