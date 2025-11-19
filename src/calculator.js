@@ -673,6 +673,46 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент (т/м) × 1000 × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * 1000 * 1.03;
+    } else if (metal.formula === 'tryba_pr_linear') {
+      // ✅ ТРУБА ПРЯМОУГОЛЬНАЯ - формула с коэффициентом × 7.85
+      // Формула: Вес (т) = (коэффициент × длина × 7.85) / 1000
+      // где коэффициент - геометрический параметр (см²)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85
+      weightPerMeter = coefficient * 7.85;
+    } else if (metal.formula === 'tryba_pr_galv_linear') {
+      // ✅ ТРУБА ПРЯМОУГОЛЬНАЯ ОЦИНКОВАННАЯ - формула с коэффициентом × 7.85 × 1.03
+      // Формула: Вес (т) = (коэффициент × длина × 7.85 × 1.03) / 1000
+      // где коэффициент - геометрический параметр (см²)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
+      weightPerMeter = coefficient * 7.85 * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
