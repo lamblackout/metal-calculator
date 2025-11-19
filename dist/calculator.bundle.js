@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-19T13:02:56.410Z
+// Собрано: 2025-11-19T13:25:48.914Z
 // ==========================================
 
 // src/formulas.js
@@ -1071,6 +1071,41 @@ function calculateMetal(params, metalDatabase) {
       // Вес 1 метра (кг) = коэффициент (кг/м) × 1.03 (оцинковка +3%)
       // БЕЗ × 7.85! Коэффициенты уже в кг/м
       weightPerMeter = coefficient * 1.03;
+    } else if (metal.formula === 'shestigrannik_steel_density') {
+      // ✅ ШЕСТИГРАННИК - формула с плотностью стали
+      // Формула: Вес (т) = (коэффициент × длина × плотность_стали) / 1000
+      // где коэффициент - геометрический параметр (площадь сечения)
+      const sizeStr = String(params.size);
+      steelType = params.steelType || 'ст3'; // Дефолтная сталь - ст3
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      // Поддержка обоих вариантов названий полей для плотности стали
+      const steelCoefs = metal.steelDensities || metal.steelCoefficients;
+      const steelDensity = steelCoefs?.[steelType];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      if (!steelDensity) {
+        return {
+          success: false,
+          error: `Марка стали ${steelType} не найдена для ${metal.name}`,
+          metalType: params.metalType,
+          steelType: steelType
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × плотность_стали
+      // С × плотность_стали! (не путать со Швеллером!)
+      weightPerMeter = coefficient * steelDensity;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
