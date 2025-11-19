@@ -581,7 +581,7 @@
       // Создаём optgroups для каждой категории
       sortedCategories.forEach(category => {
         const optgroup = document.createElement('optgroup');
-        optgroup.label = `${category} (${categories[category].length})`;
+        optgroup.label = category;
 
         // Сортируем металлы внутри категории по имени
         categories[category].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
