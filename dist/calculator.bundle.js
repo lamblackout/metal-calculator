@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-19T12:34:27.584Z
+// Собрано: 2025-11-19T12:48:18.280Z
 // ==========================================
 
 // src/formulas.js
@@ -931,6 +931,46 @@ function calculateMetal(params, metalDatabase) {
       weightPerMeter = coefficient * 7.85;
     } else if (metal.formula === 'tryba_pr_galv_linear') {
       // ✅ ТРУБА ПРЯМОУГОЛЬНАЯ ОЦИНКОВАННАЯ - формула с коэффициентом × 7.85 × 1.03
+      // Формула: Вес (т) = (коэффициент × длина × 7.85 × 1.03) / 1000
+      // где коэффициент - геометрический параметр (см²)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
+      weightPerMeter = coefficient * 7.85 * 1.03;
+    } else if (metal.formula === 'tryba_es_linear') {
+      // ✅ ТРУБА ЭЛЕКТРОСВАРНАЯ - формула с коэффициентом × 7.85
+      // Формула: Вес (т) = (коэффициент × длина × 7.85) / 1000
+      // где коэффициент - геометрический параметр (см²)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент × 7.85
+      weightPerMeter = coefficient * 7.85;
+    } else if (metal.formula === 'tryba_es_galv_linear') {
+      // ✅ ТРУБА ЭЛЕКТРОСВАРНАЯ ОЦИНКОВАННАЯ - формула с коэффициентом × 7.85 × 1.03
       // Формула: Вес (т) = (коэффициент × длина × 7.85 × 1.03) / 1000
       // где коэффициент - геометрический параметр (см²)
       const sizeStr = String(params.size);
