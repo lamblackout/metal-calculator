@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-19T12:48:18.280Z
+// Собрано: 2025-11-19T12:57:18.263Z
 // ==========================================
 
 // src/formulas.js
@@ -989,6 +989,46 @@ function calculateMetal(params, metalDatabase) {
 
       // Вес 1 метра (кг) = коэффициент × 7.85 × 1.03 (оцинковка +3%)
       weightPerMeter = coefficient * 7.85 * 1.03;
+    } else if (metal.formula === 'ygolok_linear') {
+      // ✅ УГОЛОК - линейная формула
+      // Формула: Вес (т) = коэффициент × длина (м)
+      // где коэффициент - вес 1 метра (т/м)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000
+      weightPerMeter = coefficient * 1000;
+    } else if (metal.formula === 'ygolok_galv_linear') {
+      // ✅ УГОЛОК ОЦИНКОВАННЫЙ - линейная формула с оцинковкой
+      // Формула: Вес (т) = коэффициент × длина (м) × 1.03
+      // где коэффициент - вес 1 метра (т/м)
+      const sizeStr = String(params.size);
+
+      // Получаем коэффициент
+      const coefficient = metal.weights?.[sizeStr];
+
+      if (!coefficient) {
+        return {
+          success: false,
+          error: `Размер ${sizeStr} не найден для ${metal.name}`,
+          metalType: params.metalType,
+          size: params.size
+        };
+      }
+
+      // Вес 1 метра (кг) = коэффициент (т/м) × 1000 × 1.03 (оцинковка +3%)
+      weightPerMeter = coefficient * 1000 * 1.03;
     } else if (metal.formula === 'provoloka_linear') {
       // ✅ ПРОВОЛОКА - коэффициент умножается на плотность стали
       // Формула: Вес (кг) = коэффициент × длина_м × плотность_стали_г/см³
