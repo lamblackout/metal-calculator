@@ -619,11 +619,14 @@
       // Очистить dropdown
       sizeSelect.innerHTML = '<option value="">-- Выберите размер --</option>';
 
-      // Получить все размеры (из sizes или из weights)
+      // Получить все размеры (из sizes, railTypes или weights)
       let allSizes = [];
 
       if (metal.sizes && metal.sizes.length > 0) {
         allSizes = metal.sizes;
+      } else if (metal.railTypes && metal.railTypes.length > 0) {
+        // Для рельсов используем railTypes как размеры
+        allSizes = metal.railTypes;
       } else if (metal.weights && Object.keys(metal.weights).length > 0) {
         allSizes = Object.keys(metal.weights);
       }
@@ -970,6 +973,22 @@
           }
         }
 
+        // 7. ТИП РЕЛЬСА И ВАРИАНТ (СТАНДАРТ) (для Рельса)
+        // railType берётся из поля #size (например "КР70")
+        // variant берётся из #standard-select (например "ГОСТ Р 53866-2010")
+        if (metalType === 'rels') {
+          const railType = params.size; // Тип рельса из поля размера
+          const standardSelect = document.getElementById('standard-select');
+          if (railType) {
+            params.railType = railType;
+            console.log('  ✅ railType:', params.railType);
+          }
+          if (standardSelect && standardSelect.value) {
+            params.variant = standardSelect.value;
+            console.log('  ✅ variant (рельс):', params.variant);
+          }
+        }
+
         // ===== СТАРАЯ ЛОГИКА (для обратной совместимости с катанкой) =====
         const katankaFields = document.getElementById('katanka-fields');
         if (metalType === 'wire_rod' && !katankaFields.classList.contains('hidden')) {
@@ -1254,6 +1273,16 @@
         fieldStandard.classList.remove('hidden');
         hasAnyField = true;
         console.log('  ✅ Показано поле "Стандарт" для профнастила (будет загружено при выборе размера)');
+      }
+
+      // === СТАНДАРТ (для Рельса) ===
+      if (metalType === 'rels' && metal.variants) {
+        // Варианты (стандарты) загружаются динамически при выборе типа рельса
+        // Сейчас просто показываем поле с подсказкой
+        standardSelect.innerHTML = '<option value="">-- Сначала выберите тип рельса --</option>';
+        fieldStandard.classList.remove('hidden');
+        hasAnyField = true;
+        console.log('  ✅ Показано поле "Стандарт" для рельса (будет загружено при выборе типа)');
       }
 
       // 3. Показать/скрыть контейнер
@@ -1637,6 +1666,31 @@
           }
 
           console.log(`📐 Загружено ${metal.standards[sizeValue].length} стандартов для профиля ${sizeValue}`);
+        }
+      }
+
+      // === ДИНАМИЧЕСКАЯ ЗАГРУЗКА ВАРИАНТОВ (СТАНДАРТОВ) ДЛЯ РЕЛЬСА ===
+      if (metalType === 'rels' && sizeValue && metalDatabase) {
+        const metal = metalDatabase.metals[metalType];
+        if (metal && metal.variants && metal.variants[sizeValue]) {
+          const standardSelect = document.getElementById('standard-select');
+          standardSelect.innerHTML = '<option value="">-- Выберите стандарт --</option>';
+
+          metal.variants[sizeValue].forEach(variant => {
+            const option = document.createElement('option');
+            option.value = variant.name;
+            option.textContent = `${variant.name} (${variant.coefficient.toFixed(2)} т/м)`;
+            standardSelect.appendChild(option);
+          });
+
+          // Автоматически выбрать первый вариант
+          if (metal.variants[sizeValue].length > 0) {
+            const firstVariant = metal.variants[sizeValue][0];
+            standardSelect.value = firstVariant.name;
+            console.log(`🎯 Автоматически выбран стандарт для рельса: ${firstVariant.name}`);
+          }
+
+          console.log(`📐 Загружено ${metal.variants[sizeValue].length} вариантов для рельса ${sizeValue}`);
         }
       }
 
