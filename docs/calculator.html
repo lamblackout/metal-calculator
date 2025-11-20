@@ -225,23 +225,6 @@
           <p class="text-xs text-gray-500 mt-1">Марка стали влияет на плотность и вес металла</p>
         </div>
 
-        <!-- Поле: Тип профиля (для Профнастила) -->
-        <div id="field-profile-type" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Тип профиля</label>
-          <select id="profile-type-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white" onchange="updateVariantsForProfile()">
-            <option value="">-- Выберите тип профиля --</option>
-          </select>
-          <p class="text-xs text-gray-500 mt-1">Тип профиля определяет доступные варианты</p>
-        </div>
-
-        <!-- Поле: Вариант (для Профнастила) -->
-        <div id="field-variant" class="hidden">
-          <label class="block text-sm font-semibold text-gray-700 mb-2">Вариант (размер + стандарт)</label>
-          <select id="variant-select" class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none transition bg-white">
-            <option value="">-- Сначала выберите тип профиля --</option>
-          </select>
-          <p class="text-xs text-gray-500 mt-1">Вариант включает толщину, ширину и стандарт</p>
-        </div>
 
       </div>
       <!-- ===== КОНЕЦ БЛОКА: ДИНАМИЧЕСКИЕ ПОЛЯ МАТЕРИАЛА ===== -->
@@ -976,17 +959,14 @@
           }
         }
 
-        // 6. ТИП ПРОФИЛЯ И ВАРИАНТ (для Профнастила)
+        // 6. СТАНДАРТ (для Профнастила - использует стандартное поле #standard-select)
+        // Размер (тип профиля) уже в params.size из #size
+        // Стандарт берётся из #standard-select (заполняется динамически при выборе размера)
         if (metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') {
-          const profileTypeSelect = document.getElementById('profile-type-select');
-          const variantSelect = document.getElementById('variant-select');
-          if (profileTypeSelect && profileTypeSelect.value) {
-            params.profileType = profileTypeSelect.value;
-            console.log('  ✅ profileType:', params.profileType);
-          }
-          if (variantSelect && variantSelect.value) {
-            params.variant = variantSelect.value;
-            console.log('  ✅ variant:', params.variant);
+          const standardSelect = document.getElementById('standard-select');
+          if (standardSelect && standardSelect.value) {
+            params.standard = standardSelect.value; // JSON строка {name, coefficient}
+            console.log('  ✅ standard (профнастил):', params.standard);
           }
         }
 
@@ -1266,28 +1246,14 @@
         }
       }
 
-      // === ТИП ПРОФИЛЯ И ВАРИАНТ (для Профнастила) ===
-      if ((metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') && metal.profileTypes && metal.variants) {
-        const fieldProfileType = document.getElementById('field-profile-type');
-        const fieldVariant = document.getElementById('field-variant');
-        const profileTypeSelect = document.getElementById('profile-type-select');
-        const variantSelect = document.getElementById('variant-select');
-
-        // Заполнить селект типами профиля
-        profileTypeSelect.innerHTML = '<option value="">-- Выберите тип профиля --</option>';
-        metal.profileTypes.forEach(profileType => {
-          const option = document.createElement('option');
-          option.value = profileType;
-          const variantsCount = metal.variants[profileType] ? metal.variants[profileType].length : 0;
-          option.textContent = `${profileType} (${variantsCount} вариантов)`;
-          profileTypeSelect.appendChild(option);
-        });
-
-        // Показать поле типа профиля
-        fieldProfileType.classList.remove('hidden');
-        fieldVariant.classList.remove('hidden');
+      // === СТАНДАРТ (для Профнастила) ===
+      if ((metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') && metal.standards) {
+        // Стандарты загружаются динамически при выборе размера (типа профиля)
+        // Сейчас просто показываем поле с подсказкой
+        standardSelect.innerHTML = '<option value="">-- Сначала выберите размер --</option>';
+        fieldStandard.classList.remove('hidden');
         hasAnyField = true;
-        console.log(`  ✅ Показаны поля "Тип профиля" и "Вариант" для профнастила`);
+        console.log('  ✅ Показано поле "Стандарт" для профнастила (будет загружено при выборе размера)');
       }
 
       // 3. Показать/скрыть контейнер
@@ -1300,41 +1266,6 @@
       }
     }
 
-    /**
-     * Обновить список вариантов при выборе типа профиля (для Профнастила)
-     */
-    function updateVariantsForProfile() {
-      const metalType = document.getElementById('metal-type').value;
-      const profileTypeSelect = document.getElementById('profile-type-select');
-      const variantSelect = document.getElementById('variant-select');
-      const profileType = profileTypeSelect.value;
-
-      console.log('🔄 updateVariantsForProfile вызвана для профиля:', profileType);
-
-      if (!profileType) {
-        variantSelect.innerHTML = '<option value="">-- Сначала выберите тип профиля --</option>';
-        return;
-      }
-
-      // Получить данные металла
-      const metal = window.METAL_DATABASE.metals[metalType];
-      if (!metal || !metal.variants || !metal.variants[profileType]) {
-        console.error('❌ Ошибка: варианты не найдены для профиля', profileType);
-        variantSelect.innerHTML = '<option value="">-- Ошибка: варианты не найдены --</option>';
-        return;
-      }
-
-      // Заполнить селект вариантами
-      variantSelect.innerHTML = '<option value="">-- Выберите вариант --</option>';
-      metal.variants[profileType].forEach(variant => {
-        const option = document.createElement('option');
-        option.value = variant.name;
-        option.textContent = `${variant.name} (${variant.coefficient} кг/м²)`;
-        variantSelect.appendChild(option);
-      });
-
-      console.log(`  ✅ Загружено ${metal.variants[profileType].length} вариантов для ${profileType}`);
-    }
 
     /**
      * Показать/скрыть поля для листовых металлов
@@ -1681,6 +1612,31 @@
           }
 
           console.log(`📐 Загружено ${metal.sizeStandards[sizeValue].length} стандартов для размера ${sizeValue}`);
+        }
+      }
+
+      // === ДИНАМИЧЕСКАЯ ЗАГРУЗКА СТАНДАРТОВ ДЛЯ ПРОФНАСТИЛА ===
+      if ((metalType === 'profnastil_okrash' || metalType === 'profnastil_ocink') && sizeValue && metalDatabase) {
+        const metal = metalDatabase.metals[metalType];
+        if (metal && metal.standards && metal.standards[sizeValue]) {
+          const standardSelect = document.getElementById('standard-select');
+          standardSelect.innerHTML = '<option value="">-- Выберите стандарт --</option>';
+
+          metal.standards[sizeValue].forEach(standard => {
+            const option = document.createElement('option');
+            option.value = JSON.stringify({name: standard.name, coefficient: standard.coefficient});
+            option.textContent = `${standard.name} (${standard.coefficient} кг/м²)`;
+            standardSelect.appendChild(option);
+          });
+
+          // Автоматически выбрать первый стандарт
+          if (metal.standards[sizeValue].length > 0) {
+            const firstStandard = metal.standards[sizeValue][0];
+            standardSelect.value = JSON.stringify({name: firstStandard.name, coefficient: firstStandard.coefficient});
+            console.log(`🎯 Автоматически выбран стандарт для профнастила: ${firstStandard.name}`);
+          }
+
+          console.log(`📐 Загружено ${metal.standards[sizeValue].length} стандартов для профиля ${sizeValue}`);
         }
       }
 

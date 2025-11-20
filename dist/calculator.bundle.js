@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-20T12:27:51.622Z
+// Собрано: 2025-11-20T12:56:46.479Z
 // ==========================================
 
 // src/formulas.js
@@ -1334,32 +1334,33 @@ function calculateMetal(params, metalDatabase) {
       // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
       // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
 
-      const profileType = params.profileType;
-      const variant = params.variant;
+      const size = params.size; // Тип профиля (НС35, Н60, и т.д.)
+      const standard = params.standard; // Стандарт (название и коэффициент)
 
-      // Проверка типа профиля
-      if (!profileType || !metal.variants || !metal.variants[profileType]) {
+      // Проверка размера (типа профиля)
+      if (!size || !metal.standards || !metal.standards[size]) {
         return {
           success: false,
-          error: `Тип профиля '${profileType}' не найден`,
+          error: `Размер (тип профиля) '${size}' не найден`,
           metalType: params.metalType,
-          profileType: profileType
+          size: size
         };
       }
 
-      // Находим вариант (размер + стандарт)
-      const variantData = metal.variants[profileType].find(v => v.name === variant);
-      if (!variantData) {
+      // Получить коэффициент из стандарта
+      let coefficient;
+      if (standard) {
+        // standard может быть строкой JSON или объектом
+        const standardObj = typeof standard === 'string' ? JSON.parse(standard) : standard;
+        coefficient = standardObj.coefficient;
+      } else {
         return {
           success: false,
-          error: `Вариант '${variant}' не найден для профиля '${profileType}'`,
+          error: 'Необходимо выбрать стандарт',
           metalType: params.metalType,
-          profileType: profileType,
-          variant: variant
+          size: size
         };
       }
-
-      const coefficient = variantData.coefficient; // кг/м²
 
       // Площадь: либо напрямую, либо через размеры листа
       let area;
@@ -1384,8 +1385,8 @@ function calculateMetal(params, metalDatabase) {
         weight: parseFloat(weight.toFixed(3)),
         weightPerMeter: null, // Для профнастила нет веса на метр
         metalType: params.metalType,
-        profileType: profileType,
-        variant: variant,
+        size: size,
+        standard: standard,
         coefficient: coefficient,
         area: area
       };
