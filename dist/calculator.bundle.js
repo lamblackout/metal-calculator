@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-20T13:18:03.474Z
+// Собрано: 2025-11-20T13:35:06.932Z
 // ==========================================
 
 // src/formulas.js
@@ -1349,10 +1349,12 @@ function calculateMetal(params, metalDatabase) {
 
       // Получить коэффициент из стандарта
       let coefficient;
+      let standardName;
 
       if (standard) {
         const standardObj = typeof standard === 'string' ? JSON.parse(standard) : standard;
         coefficient = standardObj.coefficient;
+        standardName = standardObj.name;
       } else {
         return {
           success: false,
@@ -1362,28 +1364,90 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // ✅ ПРОСТАЯ ФОРМУЛА: коэффициент × длина / 1000
-      const length = params.length || 0;
+      // ✅ РАСЧЁТ В ЗАВИСИМОСТИ ОТ ВХОДНЫХ ПАРАМЕТРОВ
+      let weight = null;
+      let length = null;
+      let pieces = null;
+      const requested = {};
 
-      if (!length || length <= 0) {
+      if (params.weight) {
+        // Дано: вес (в тоннах) → найти длину
+        requested.value = params.weight;
+        requested.unit = 'weight';
+        requested.label = `${params.weight} т`;
+
+        const weightInKg = params.weight * 1000;
+        // длина = вес_кг / коэффициент
+        length = weightInKg / coefficient;
+        weight = params.weight;
+
+        // Рассчитать штуки если указана длина 1 листа
+        if (params.lengthSheet && params.lengthSheet > 0) {
+          pieces = Math.ceil(length / params.lengthSheet);
+          // Пересчитать длину и вес под округлённые штуки
+          length = pieces * params.lengthSheet;
+          weight = (coefficient * length) / 1000;
+        }
+
+      } else if (params.length) {
+        // Дано: длина (в метрах) → найти вес
+        requested.value = params.length;
+        requested.unit = 'length';
+        requested.label = `${params.length} м`;
+
+        length = params.length;
+
+        // Рассчитать штуки если указана длина 1 листа
+        if (params.lengthSheet && params.lengthSheet > 0) {
+          pieces = Math.ceil(length / params.lengthSheet);
+          // Пересчитать длину и вес под округлённые штуки
+          length = pieces * params.lengthSheet;
+        }
+
+        // Вес (т) = коэффициент × длина / 1000
+        weight = (coefficient * length) / 1000;
+
+      } else if (params.pieces) {
+        // Дано: штуки → найти длину и вес
+        requested.value = params.pieces;
+        requested.unit = 'pieces';
+        requested.label = `${params.pieces} шт`;
+
+        pieces = params.pieces;
+        const pieceLength = params.lengthSheet || 1; // Длина 1 листа (по умолчанию 1м)
+        length = pieces * pieceLength;
+        weight = (coefficient * length) / 1000;
+
+      } else {
         return {
           success: false,
-          error: 'Необходимо указать длину (м)',
+          error: 'Необходимо указать вес, длину или количество штук',
           metalType: params.metalType
         };
       }
 
-      // Вес (т) = коэффициент × длина / 1000
-      const weight = (coefficient * length) / 1000;
-
+      // ✅ ВОЗВРАТ В СТАНДАРТНОМ ФОРМАТЕ
       return {
         success: true,
-        weight: parseFloat(weight.toFixed(3)),
-        weightPerMeter: null,
-        metalType: params.metalType,
+        metalType: metal.name,
         size: size,
+        standard: standardName,
+        gost: metal.gost || 'Не указан',
+        category: metal.category || 'Не указана',
+
+        // ✅ Запрошенные значения
+        requested: requested,
+
+        // ✅ Фактические значения
+        actual: {
+          weight: weight !== null ? parseFloat(weight.toFixed(3)) : null,
+          length: length !== null ? parseFloat(length.toFixed(2)) : null,
+          pieces: pieces
+        },
+
+        // ✅ Дополнительная информация
         coefficient: coefficient,
-        length: length
+        weightPerMeter: null  // Для профнастила не используется
       };
     } else if (metal.formula === 'linear') {
       // ✅ ЛИНЕЙНАЯ ФОРМУЛА (для труб квадратных обычных)
