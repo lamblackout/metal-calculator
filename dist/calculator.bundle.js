@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-20T12:56:46.479Z
+// Собрано: 2025-11-20T13:18:03.474Z
 // ==========================================
 
 // src/formulas.js
@@ -1331,13 +1331,13 @@ function calculateMetal(params, metalDatabase) {
         category: metal.category || 'shpynt'
       };
     } else if (metal.formula === 'profnastil_area') {
-      // ✅ ПРОФНАСТИЛ (ОКРАШЕННЫЙ И ОЦИНКОВАННЫЙ) - расчёт по площади
-      // Формула: Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
+      // ✅ ПРОФНАСТИЛ - расчёт по длине
+      // Формула: Вес (т) = коэффициент × длина (м) / 1000
 
       const size = params.size; // Тип профиля (НС35, Н60, и т.д.)
-      const standard = params.standard; // Стандарт (название и коэффициент)
+      const standard = params.standard; // Стандарт с коэффициентом
 
-      // Проверка размера (типа профиля)
+      // Проверка размера
       if (!size || !metal.standards || !metal.standards[size]) {
         return {
           success: false,
@@ -1349,8 +1349,8 @@ function calculateMetal(params, metalDatabase) {
 
       // Получить коэффициент из стандарта
       let coefficient;
+
       if (standard) {
-        // standard может быть строкой JSON или объектом
         const standardObj = typeof standard === 'string' ? JSON.parse(standard) : standard;
         coefficient = standardObj.coefficient;
       } else {
@@ -1362,33 +1362,28 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // Площадь: либо напрямую, либо через размеры листа
-      let area;
-      if (params.area && params.area > 0) {
-        area = params.area;
-      } else if (params.width && params.length) {
-        const quantity = params.quantityPieces || 1;
-        area = params.width * params.length * quantity;
-      } else {
+      // ✅ ПРОСТАЯ ФОРМУЛА: коэффициент × длина / 1000
+      const length = params.length || 0;
+
+      if (!length || length <= 0) {
         return {
           success: false,
-          error: 'Необходимо указать площадь или размеры листа (ширина × длина)',
+          error: 'Необходимо указать длину (м)',
           metalType: params.metalType
         };
       }
 
-      // Вес (т) = коэффициент (кг/м²) × площадь (м²) / 1000
-      const weight = (coefficient * area) / 1000;
+      // Вес (т) = коэффициент × длина / 1000
+      const weight = (coefficient * length) / 1000;
 
       return {
         success: true,
         weight: parseFloat(weight.toFixed(3)),
-        weightPerMeter: null, // Для профнастила нет веса на метр
+        weightPerMeter: null,
         metalType: params.metalType,
         size: size,
-        standard: standard,
         coefficient: coefficient,
-        area: area
+        length: length
       };
     } else if (metal.formula === 'linear') {
       // ✅ ЛИНЕЙНАЯ ФОРМУЛА (для труб квадратных обычных)
