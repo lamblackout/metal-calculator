@@ -43750,44 +43750,24 @@
         "КР70": [
           {
             "name": "ГОСТ Р 53866-2010",
-            "coefficient": 6.0471337579618
+            "coefficient": 6.047133757962
           },
           {
             "name": "ГОСТ 4121-96",
-            "coefficient": 5.8726114649682
+            "coefficient": 5.872611464968
           }
         ],
         "КР80": [
           {
             "name": "ГОСТ Р 53866-2010",
-            "coefficient": 6.0471337579618
+            "coefficient": 8.183439490446
           },
           {
             "name": "ГОСТ 4121-96",
-            "coefficient": 5.8726114649682
+            "coefficient": 7.619108280255
           }
         ],
         "КР100": [
-          {
-            "name": "ГОСТ Р 53866-2010",
-            "coefficient": 6.0471337579618
-          },
-          {
-            "name": "ГОСТ 4121-96",
-            "coefficient": 5.8726114649682
-          }
-        ],
-        "КР120": [
-          {
-            "name": "ГОСТ Р 53866-2010",
-            "coefficient": 8.1834394904459
-          },
-          {
-            "name": "ГОСТ 4121-96",
-            "coefficient": 7.6191082802548
-          }
-        ],
-        "КР140": [
           {
             "name": "ГОСТ Р 53866-2010",
             "coefficient": 11.343949044586
@@ -43797,7 +43777,7 @@
             "coefficient": 10.584713375796
           }
         ],
-        "ОР43": [
+        "КР120": [
           {
             "name": "ГОСТ Р 53866-2010",
             "coefficient": 15.068789808917
@@ -43807,7 +43787,7 @@
             "coefficient": 14.454777070064
           }
         ],
-        "ОР50": [
+        "КР140": [
           {
             "name": "ГОСТ Р 53866-2010",
             "coefficient": 18.713375796178
@@ -43817,668 +43797,680 @@
             "coefficient": 18.050955414013
           }
         ],
-        "ОР65": [
+        "ОР43": [
           {
             "name": "ТУ 14-2Р-326-97",
             "coefficient": 7.003821656051
           }
         ],
-        "Р8": [
+        "ОР50": [
           {
             "name": "ГОСТ Р 55820-2013",
-            "coefficient": 8.1605095541401
+            "coefficient": 8.16050955414
           }
         ],
-        "Р11": [
+        "ОР65": [
           {
             "name": "ГОСТ Р 55820-2013",
             "coefficient": 10.340127388535
           }
         ],
+        "Р8": [
+          {
+            "name": "ГОСТ 6368-82",
+            "coefficient": 1.072611464968
+          }
+        ],
+        "Р11": [
+          {
+            "name": "ГОСТ 6368-82",
+            "coefficient": 1.424203821656
+          }
+        ],
         "Р18": [
           {
             "name": "ГОСТ 6368-82",
-            "coefficient": 1.0726114649682
+            "coefficient": 2.28152866242
           }
         ],
         "Р24": [
           {
             "name": "ГОСТ 6368-82",
-            "coefficient": 1.4242038216561
+            "coefficient": 3.171974522293
           }
         ],
         "Р33": [
           {
-            "name": "ГОСТ 6368-82",
-            "coefficient": 2.2815286624204
+            "name": "ТУ 14-2Р-383-2004",
+            "coefficient": 4.264968152866
           }
         ],
         "Р34": [
-          {
-            "name": "ГОСТ 6368-82",
-            "coefficient": 3.171974522293
-          }
-        ],
-        "Р38": [
-          {
-            "name": "ТУ 14-2Р-383-2004",
-            "coefficient": 4.2649681528662
-          }
-        ],
-        "Р43": [
           {
             "name": "ТТ 232-14-2014",
             "coefficient": 4.343949044586
           }
         ],
-        "Р50": [
+        "Р38": [
           {
             "name": "ГОСТ 30165-94",
-            "coefficient": 6.2500636942675
+            "coefficient": 6.250063694268
+          }
+        ],
+        "Р43": [
+          {
+            "name": "ГОСТ 7173-54",
+            "coefficient": 5.688280254777
+          },
+          {
+            "name": "ГОСТ 30165-94",
+            "coefficient": 7.261146496815
+          }
+        ],
+        "Р50": [
+          {
+            "name": "ГОСТ Р 51685-2013",
+            "coefficient": 6.59872611465
           }
         ],
         "Р65": [
           {
-            "name": "ГОСТ 7173-54",
-            "coefficient": 5.6882802547771
-          },
-          {
-            "name": "ГОСТ 30165-94",
-            "coefficient": 7.2611464968153
+            "name": "ГОСТ Р 51685-2013",
+            "coefficient": 8.264968152866
           }
         ],
         "Р65К": [
           {
             "name": "ГОСТ Р 51685-2013",
-            "coefficient": 6.5987261146497
+            "coefficient": 8.23821656051
           }
         ],
         "Р75": [
           {
             "name": "ГОСТ Р 51685-2013",
-            "coefficient": 8.2649681528662
+            "coefficient": 9.503184713376
           }
         ],
         "РК50": [
           {
-            "name": "ГОСТ Р 51685-2013",
-            "coefficient": 8.2382165605096
+            "name": "ГОСТ 9797-85",
+            "coefficient": 4.658598726115
           }
         ],
         "РК65": [
           {
-            "name": "ГОСТ Р 51685-2013",
-            "coefficient": 9.5031847133758
+            "name": "ГОСТ 9798-85",
+            "coefficient": 5.564331210191
           }
         ],
         "РК75": [
           {
-            "name": "ГОСТ 9797-85",
-            "coefficient": 4.6585987261146
+            "name": "ГОСТ 26110-84",
+            "coefficient": 6.191082802548
           }
         ],
         "РП50": [
           {
-            "name": "ГОСТ 9798-85",
-            "coefficient": 5.5643312101911
+            "name": "ГОСТ Р 51045-2014",
+            "coefficient": 6.59872611465
           }
         ],
         "РП60Е1": [
           {
-            "name": "ГОСТ 26110-84",
-            "coefficient": 6.1910828025478
+            "name": "ГОСТ Р 51045-2014",
+            "coefficient": 7.670063694268
           }
         ],
         "РП65": [
           {
             "name": "ГОСТ Р 51045-2014",
-            "coefficient": 6.5987261146497
+            "coefficient": 8.264968152866
           }
         ],
         "РП65К": [
           {
             "name": "ГОСТ Р 51045-2014",
-            "coefficient": 7.6700636942675
+            "coefficient": 8.23821656051
           }
         ],
         "РП75": [
           {
             "name": "ГОСТ Р 51045-2014",
-            "coefficient": 8.2649681528662
+            "coefficient": 9.503184713376
           }
         ],
         "РТ58": [
           {
-            "name": "ГОСТ Р 51045-2014",
-            "coefficient": 8.2382165605096
+            "name": "ГОСТ Р 55941-2014",
+            "coefficient": 7.336305732484
           }
         ],
         "РТ60Е": [
           {
-            "name": "ГОСТ Р 51045-2014",
-            "coefficient": 9.5031847133758
+            "name": "ГОСТ Р 55941-2014",
+            "coefficient": 7.71847133758
           }
         ],
         "РТ62": [
           {
             "name": "ГОСТ Р 55941-2014",
-            "coefficient": 7.3363057324841
+            "coefficient": 7.910828025478
           }
         ],
         "РТ62Е": [
           {
             "name": "ГОСТ Р 55941-2014",
-            "coefficient": 7.7184713375796
+            "coefficient": 7.945222929936
           }
         ],
         "УР65": [
-          {
-            "name": "ГОСТ Р 55941-2014",
-            "coefficient": 7.9108280254777
-          }
-        ],
-        "39E1": [
-          {
-            "name": "ГОСТ Р 55941-2014",
-            "coefficient": 7.9452229299363
-          }
-        ],
-        "45E1": [
           {
             "name": "ТС 05757676-44-2017",
             "coefficient": 10.789808917197
           }
         ],
+        "39E1": [
+          {
+            "name": "EN 13674-4",
+            "coefficient": 5.066242038217
+          }
+        ],
+        "45E1": [
+          {
+            "name": "EN 13674-4",
+            "coefficient": 5.745222929936
+          }
+        ],
         "45E3": [
           {
             "name": "EN 13674-4",
-            "coefficient": 5.0662420382166
+            "coefficient": 5.705732484076
           }
         ],
         "46E1": [
           {
-            "name": "EN 13674-4",
-            "coefficient": 5.7452229299363
+            "name": "EN 13674-1",
+            "coefficient": 5.88152866242
           }
         ],
         "46E2": [
           {
-            "name": "EN 13674-4",
-            "coefficient": 5.7057324840764
+            "name": "EN 13674-1",
+            "coefficient": 5.894267515924
           }
         ],
         "46E3": [
           {
             "name": "EN 13674-1",
-            "coefficient": 5.8815286624204
+            "coefficient": 5.943949044586
           }
         ],
         "46E4": [
           {
             "name": "EN 13674-1",
-            "coefficient": 5.8942675159236
+            "coefficient": 5.974522292994
           }
         ],
         "49E1": [
           {
             "name": "EN 13674-1",
-            "coefficient": 5.943949044586
+            "coefficient": 6.291719745223
           }
         ],
         "49E2": [
           {
             "name": "EN 13674-1",
-            "coefficient": 5.9745222929936
+            "coefficient": 6.254777070064
           }
         ],
         "49E3": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.2917197452229
+            "coefficient": 6.089171974522
           }
         ],
         "49E4": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.2547770700637
+            "coefficient": 6.305732484076
           }
         ],
         "49E5": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.0891719745223
+            "coefficient": 6.258598726115
           }
         ],
         "50E1": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.3057324840764
+            "coefficient": 6.416560509554
           }
         ],
         "50E2": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.2585987261147
+            "coefficient": 6.365605095541
           }
         ],
         "50E3": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.4165605095541
+            "coefficient": 6.371974522293
           }
         ],
         "50E4": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.3656050955414
+            "coefficient": 6.428025477707
           }
         ],
         "50E5": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.371974522293
+            "coefficient": 6.356687898089
           }
         ],
         "50E6": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.428025477707
-          }
-        ],
-        "51R1": [
-          {
-            "name": "EN 13674-1",
-            "coefficient": 6.3566878980892
-          }
-        ],
-        "52E1": [
-          {
-            "name": "EN 13674-1",
             "coefficient": 6.484076433121
           }
         ],
-        "53K2": [
+        "51R1": [
           {
             "name": "EN 14811",
             "coefficient": 6.543949044586
           }
         ],
-        "53R1": [
+        "52E1": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.6433121019108
+            "coefficient": 6.643312101911
+          }
+        ],
+        "53K2": [
+          {
+            "name": "EN 14811",
+            "coefficient": 6.794904458599
+          }
+        ],
+        "53R1": [
+          {
+            "name": "EN 14811",
+            "coefficient": 6.749044585987
           }
         ],
         "54E1": [
           {
-            "name": "EN 14811",
-            "coefficient": 6.7949044585987
+            "name": "EN 13674-1",
+            "coefficient": 6.977070063694
           }
         ],
         "54E2": [
-          {
-            "name": "EN 14811",
-            "coefficient": 6.7490445859873
-          }
-        ],
-        "54E3": [
-          {
-            "name": "EN 13674-1",
-            "coefficient": 6.9770700636943
-          }
-        ],
-        "54E4": [
           {
             "name": "EN 13674-1",
             "coefficient": 6.856050955414
           }
         ],
+        "54E3": [
+          {
+            "name": "EN 13674-1",
+            "coefficient": 6.951592356688
+          }
+        ],
+        "54E4": [
+          {
+            "name": "EN 13674-1",
+            "coefficient": 6.91847133758
+          }
+        ],
         "54E5": [
           {
             "name": "EN 13674-1",
-            "coefficient": 6.9515923566879
+            "coefficient": 6.932484076433
           }
         ],
         "54G1": [
           {
-            "name": "EN 13674-1",
-            "coefficient": 6.9184713375796
+            "name": "EN 14811",
+            "coefficient": 6.912101910828
           }
         ],
         "54G2": [
           {
-            "name": "EN 13674-1",
-            "coefficient": 6.9324840764331
+            "name": "EN 14811",
+            "coefficient": 6.949044585987
           }
         ],
         "54G4": [
           {
             "name": "EN 14811",
-            "coefficient": 6.912101910828
+            "coefficient": 6.380891719745
           }
         ],
         "54R1": [
           {
             "name": "EN 14811",
-            "coefficient": 6.9490445859873
+            "coefficient": 6.912101910828
           }
         ],
         "55E1": [
           {
-            "name": "EN 14811",
-            "coefficient": 6.3808917197452
+            "name": "EN 13674-1",
+            "coefficient": 7.137579617834
           }
         ],
         "55G3": [
           {
             "name": "EN 14811",
-            "coefficient": 6.912101910828
+            "coefficient": 7.04076433121
           }
         ],
         "55R1": [
           {
-            "name": "EN 13674-1",
-            "coefficient": 7.1375796178344
+            "name": "EN 14811",
+            "coefficient": 7.063694267516
           }
         ],
         "56E1": [
-          {
-            "name": "EN 14811",
-            "coefficient": 7.0407643312102
-          }
-        ],
-        "57K2": [
-          {
-            "name": "EN 14811",
-            "coefficient": 7.0636942675159
-          }
-        ],
-        "57R1": [
           {
             "name": "EN 13674-1",
             "coefficient": 7.171974522293
           }
         ],
+        "57K2": [
+          {
+            "name": "EN 14811",
+            "coefficient": 7.347770700637
+          }
+        ],
+        "57R1": [
+          {
+            "name": "EN 14811",
+            "coefficient": 7.202547770701
+          }
+        ],
         "58K2": [
           {
             "name": "EN 14811",
-            "coefficient": 7.3477707006369
+            "coefficient": 7.425477707006
           }
         ],
         "59R1": [
           {
             "name": "EN 14811",
-            "coefficient": 7.2025477707006
+            "coefficient": 7.512101910828
           }
         ],
         "59R2": [
           {
             "name": "EN 14811",
-            "coefficient": 7.4254777070064
+            "coefficient": 7.414012738853
           }
         ],
         "60E1": [
           {
-            "name": "EN 14811",
-            "coefficient": 7.512101910828
+            "name": "EN 13674-1",
+            "coefficient": 7.670063694268
           }
         ],
         "60E2": [
           {
-            "name": "EN 14811",
-            "coefficient": 7.4140127388535
+            "name": "EN 13674-1",
+            "coefficient": 7.647133757962
           }
         ],
         "60R1": [
           {
-            "name": "EN 13674-1",
-            "coefficient": 7.6700636942675
+            "name": "EN 14811",
+            "coefficient": 7.71847133758
           }
         ],
         "60R2": [
           {
-            "name": "EN 13674-1",
-            "coefficient": 7.6471337579618
+            "name": "EN 14811",
+            "coefficient": 7.611464968153
           }
         ],
         "62R1": [
           {
             "name": "EN 14811",
-            "coefficient": 7.7184713375796
+            "coefficient": 7.945222929936
           }
         ],
         "62R2": [
           {
             "name": "EN 14811",
-            "coefficient": 7.6114649681529
+            "coefficient": 7.886624203822
           }
         ],
         "90ARA-A": [
-          {
-            "name": "EN 14811",
-            "coefficient": 7.9452229299363
-          }
-        ],
-        "100ARA-B": [
-          {
-            "name": "EN 14811",
-            "coefficient": 7.8866242038217
-          }
-        ],
-        "100RE": [
           {
             "name": "AREMA",
             "coefficient": 5.687898089172
           }
         ],
+        "100ARA-B": [
+          {
+            "name": "AREMA",
+            "coefficient": 6.323566878981
+          }
+        ],
+        "100RE": [
+          {
+            "name": "AREMA",
+            "coefficient": 6.414012738853
+          }
+        ],
         "115RE": [
           {
             "name": "AREMA",
-            "coefficient": 6.3235668789809
+            "coefficient": 7.247133757962
           }
         ],
         "119RE": [
           {
             "name": "AREMA",
-            "coefficient": 6.4140127388535
+            "coefficient": 7.507006369427
           }
         ],
         "132RE": [
           {
             "name": "AREMA",
-            "coefficient": 7.2471337579618
+            "coefficient": 8.354140127389
           }
         ],
         "136RE": [
           {
             "name": "AREMA",
-            "coefficient": 7.5070063694268
+            "coefficient": 8.59872611465
           }
         ],
         "141AB": [
           {
             "name": "AREMA",
-            "coefficient": 8.3541401273885
+            "coefficient": 8.901910828025
           }
         ],
         "A45": [
           {
-            "name": "AREMA",
-            "coefficient": 8.5987261146497
+            "name": "DIN 536",
+            "coefficient": 2.815286624204
           }
         ],
         "A55": [
           {
-            "name": "AREMA",
-            "coefficient": 8.9019108280255
+            "name": "DIN 536",
+            "coefficient": 4.050955414013
           }
         ],
         "A65": [
           {
-            "name": "AREMA",
-            "coefficient": 8.9019108280255
+            "name": "DIN 536",
+            "coefficient": 5.490445859873
           }
         ],
         "A75": [
           {
             "name": "DIN 536",
-            "coefficient": 2.8152866242038
+            "coefficient": 7.15923566879
           }
         ],
         "A100": [
           {
             "name": "DIN 536",
-            "coefficient": 4.0509554140127
+            "coefficient": 9.464968152866
           }
         ],
         "A120": [
           {
             "name": "DIN 536",
-            "coefficient": 5.4904458598726
+            "coefficient": 12.738853503185
           }
         ],
         "A150": [
           {
             "name": "DIN 536",
-            "coefficient": 7.1592356687898
+            "coefficient": 19.146496815287
           }
         ],
         "BS50O": [
           {
-            "name": "DIN 536",
-            "coefficient": 9.4649681528662
+            "name": "BS11",
+            "coefficient": 3.163439490446
           }
         ],
         "BS60A": [
           {
-            "name": "DIN 536",
-            "coefficient": 12.738853503185
+            "name": "BS11",
+            "coefficient": 3.900382165605
           }
         ],
         "BS60R": [
           {
-            "name": "DIN 536",
-            "coefficient": 19.146496815287
+            "name": "BS11",
+            "coefficient": 3.79898089172
           }
         ],
         "BS70A": [
           {
             "name": "BS11",
-            "coefficient": 3.1634394904459
+            "coefficient": 4.434012738854
           }
         ],
         "BS75A": [
           {
             "name": "BS11",
-            "coefficient": 3.9003821656051
+            "coefficient": 4.771337579618
           }
         ],
         "BS75R": [
           {
             "name": "BS11",
-            "coefficient": 3.7989808917197
+            "coefficient": 4.718598726115
           }
         ],
         "BS80A": [
           {
             "name": "BS11",
-            "coefficient": 4.4340127388535
+            "coefficient": 5.065095541401
           }
         ],
         "BS80R": [
           {
             "name": "BS11",
-            "coefficient": 4.7713375796178
+            "coefficient": 5.054012738854
           }
         ],
         "BS90A": [
           {
             "name": "BS11",
-            "coefficient": 4.7185987261146
+            "coefficient": 5.745095541401
           }
         ],
         "BS100A": [
           {
             "name": "BS11",
-            "coefficient": 5.0650955414013
+            "coefficient": 6.392993630573
           }
         ],
         "BS113A": [
           {
             "name": "BS11",
-            "coefficient": 5.0540127388535
+            "coefficient": 7.184458598726
           }
         ],
         "S10": [
           {
-            "name": "BS11",
-            "coefficient": 5.7450955414013
+            "name": "DIN 5901",
+            "coefficient": 1.273885350318
           }
         ],
         "S14": [
           {
-            "name": "BS11",
-            "coefficient": 6.3929936305732
+            "name": "DIN 5901",
+            "coefficient": 1.783439490446
           }
         ],
         "S18": [
           {
-            "name": "BS11",
-            "coefficient": 7.1844585987261
+            "name": "DIN 5901",
+            "coefficient": 2.331210191083
           }
         ],
         "S20": [
           {
             "name": "DIN 5901",
-            "coefficient": 1.2738853503185
+            "coefficient": 2.522292993631
           }
         ],
         "S24": [
           {
             "name": "DIN 5901",
-            "coefficient": 1.7834394904459
+            "coefficient": 3.108280254777
           }
         ],
         "S30": [
           {
             "name": "DIN 5901",
-            "coefficient": 2.3312101910828
+            "coefficient": 3.825477707006
           }
         ],
         "S31": [
           {
             "name": "DIN 5901",
-            "coefficient": 2.5222929936306
+            "coefficient": 4.021656050955
           }
         ],
         "S33": [
           {
             "name": "DIN 5901",
-            "coefficient": 3.1082802547771
+            "coefficient": 4.263694267516
           }
         ],
         "S41A": [
           {
             "name": "DIN 5901",
-            "coefficient": 3.8254777070064
+            "coefficient": 5.253503184713
           }
         ],
         "S41R10": [
           {
             "name": "DIN 5901",
-            "coefficient": 4.0216560509554
+            "coefficient": 5.271337579618
           }
         ],
         "S41R14": [
           {
             "name": "DIN 5901",
-            "coefficient": 4.2636942675159
+            "coefficient": 5.216560509554
           }
         ],
         "S49": [
           {
             "name": "DIN 5901",
-            "coefficient": 5.2713375796178
+            "coefficient": 6.296815286624
           }
         ]
       }

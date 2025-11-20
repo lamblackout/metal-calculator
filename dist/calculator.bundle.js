@@ -1,7 +1,7 @@
 // ==========================================
 // Metal Calculator Bundle для Node.js
 // Версия: 1.0.0
-// Собрано: 2025-11-20T17:57:07.246Z
+// Собрано: 2025-11-20T19:04:37.954Z
 // ==========================================
 
 // src/formulas.js
@@ -1219,8 +1219,13 @@ function calculateMetal(params, metalDatabase) {
       weightPerMeter = coefficient * steelDensity;
     } else if (metal.formula === 'rels_linear') {
       // ✅ РЕЛЬС - линейная формула с вариантами стандартов
-      // Формула: Вес (т) = коэффициент (т/м) × длина (м)
-      // где коэффициент зависит от типа рельса и стандарта (ГОСТ, EN, AREMA, DIN, BS и т.д.)
+      // Формула: Вес (т) = коэффициент (кг/м) × длина (м) × 7.85 / 1000
+      // где:
+      //   - коэффициент: вес 1 метра рельса в кг/м (хранится в базе данных)
+      //   - 7.85: плотность стали (г/см³)
+      //   - длина: длина рельса в метрах
+      //   - результат: вес в тоннах
+      // Коэффициент зависит от типа рельса и стандарта (ГОСТ, EN, AREMA, DIN, BS и т.д.)
 
       const railType = params.railType;
       const variant = params.variant;
@@ -1247,10 +1252,13 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      const coefficient = variantData.coefficient; // т/м
+      const coefficient = variantData.coefficient; // кг/м
 
-      // Вес 1 метра (кг) = коэффициент (т/м) × 1000
-      weightPerMeter = coefficient * 1000;
+      // Вес 1 метра (кг) с учётом плотности стали
+      // Коэффициент хранится в кг/м, умножаем на 7.85 (плотность стали)
+      // Базовая формула потом делит на 1000 для получения тонн
+      // Итоговая формула: вес (т) = coefficient × length × 7.85 / 1000
+      weightPerMeter = coefficient * 7.85;
     } else if (metal.formula === 'shpynt_3fields') {
       // ✅ ШПУНТ - специальный 3-полевой калькулятор
       // Формула: тонны ↔ метры ↔ кв. метры
