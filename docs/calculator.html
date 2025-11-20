@@ -1914,7 +1914,11 @@
       }
 
       html += createResultRow('📋 ГОСТ', result.gost);
-      html += createResultRow('⚖️ Вес 1 метра', result.weightPerMeter.toFixed(3) + ' кг');
+
+      // Показывать вес 1 метра только если он определён (для профнастила его нет)
+      if (result.weightPerMeter !== null && result.weightPerMeter !== undefined) {
+        html += createResultRow('⚖️ Вес 1 метра', result.weightPerMeter.toFixed(3) + ' кг');
+      }
 
       if (result.standardLength) {
         html += createResultRow('📐 Стандартная длина', result.standardLength + ' м');
