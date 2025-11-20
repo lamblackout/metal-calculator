@@ -1082,12 +1082,20 @@ function calculateMetal(params, metalDatabase) {
         };
       }
 
-      // Возвращаем результат со всеми тремя полями
+      // Возвращаем результат со всеми тремя полями в формате actual/requested
       return {
         success: true,
-        weight: parseFloat(weight.toFixed(3)),
-        length: parseFloat(length.toFixed(2)),
-        area: parseFloat(area.toFixed(3)),
+        actual: {
+          weight: parseFloat(weight.toFixed(3)),
+          length: parseFloat(length.toFixed(2)),
+          pieces: null // Шпунты не используют штуки
+        },
+        requested: {
+          value: params.weight || params.length || params.area,
+          unit: params.weight ? 'тонны' : (params.length ? 'метры' : 'м²'),
+          label: params.weight ? 'Вес' : (params.length ? 'Длина' : 'Площадь')
+        },
+        area: parseFloat(area.toFixed(3)), // Площадь как отдельное поле для UI
         metalType: params.metalType,
         size: params.size,
         coefficient: coefficient, // кг/м
