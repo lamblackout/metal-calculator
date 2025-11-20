@@ -411,6 +411,24 @@
           </div>
         </div>
 
+        <!-- Поле: Площадь (только для шпунтов) -->
+        <div class="form-row" id="field-area" style="display: none;">
+          <div class="form-group flex-1">
+            <label for="input-area">
+              📐 Площадь
+              <span class="field-hint">м²</span>
+            </label>
+            <input
+              type="number"
+              id="input-area"
+              class="form-control"
+              placeholder="например: 100"
+              step="0.01"
+              min="0"
+            >
+          </div>
+        </div>
+
         <!-- Автоматически рассчитанная площадь -->
         <div id="calculated-area-box" class="info-box" style="display: none; margin-top: 8px; background: #e3f2fd; border-left: 4px solid #2196f3;">
           <strong>📐 Площадь (автоматически):</strong>
@@ -732,7 +750,7 @@
     const lengthInput = document.getElementById('input-length');
     const lengthPerPieceInput = document.getElementById('input-length-per-piece');
     const piecesInput = document.getElementById('input-pieces');
-    const areaInput = null;  // Поле площади УДАЛЕНО - площадь считается автоматически
+    const areaInput = document.getElementById('input-area');  // Поле площади для шпунтов
     const widthInput = document.getElementById('input-width');
     const lengthSheetInput = document.getElementById('input-length-sheet');
 
@@ -853,15 +871,16 @@
           inputValue = parseFloat(lengthInput.value);
         } else if (sourceField === 'pieces') {
           inputValue = parseInt(piecesInput.value);
+        } else if (sourceField === 'area') {
+          inputValue = parseFloat(areaInput.value);
         }
-        // sourceField === 'area' удалён - поля площади больше нет
 
         // Если поле пустое или 0 - очистить остальные
         if (!inputValue || inputValue <= 0) {
           if (sourceField !== 'weight') weightInput.value = '';
           if (sourceField !== 'length') lengthInput.value = '';
           if (sourceField !== 'pieces') piecesInput.value = '';
-          // areaInput удалён
+          if (sourceField !== 'area' && areaInput) areaInput.value = '';
           hideResult();
           isCalculating = false;
           return;
@@ -888,8 +907,9 @@
           params.length = inputValue;
         } else if (sourceField === 'pieces') {
           params.pieces = inputValue;
+        } else if (sourceField === 'area') {
+          params.area = inputValue;
         }
-        // params.area удалён - поля площади больше нет
 
         // Если введены ширина и длина листа - добавить их в params
         const width = parseFloat(widthInput.value);
@@ -1054,6 +1074,21 @@
                   console.log(`⚠️ Длина/площадь изменилась из-за округления: ${requestedLength.toFixed(2)} → ${calculatedLength.toFixed(2)}`);
                 }
                 console.log('✅ Length заполнен:', lengthInput.value);
+              }
+            }
+
+            // Заполнение площади для шпунтов (3-полевой калькулятор)
+            if (result.area !== undefined && result.area !== null && areaInput) {
+              const requestedArea = parseFloat(areaInput.value);
+              const calculatedArea = result.area;
+              const areaChanged = Math.abs(calculatedArea - requestedArea) > 0.01;
+
+              if (sourceField !== 'area' || areaChanged) {
+                areaInput.value = result.area.toFixed(3);
+                if (areaChanged && sourceField === 'area') {
+                  console.log(`⚠️ Площадь изменилась из-за округления: ${requestedArea.toFixed(3)} → ${calculatedArea.toFixed(3)}`);
+                }
+                console.log('✅ Area заполнена:', areaInput.value);
               }
             }
 
@@ -1305,10 +1340,11 @@
 
       console.log('🔧 updateSheetFieldsVisibility вызвана для типа:', metalType);
 
-      // Получить элементы полей (поле площади удалено - она считается автоматически)
+      // Получить элементы полей
       const fieldLength = document.getElementById('field-length');
       const fieldWidth = document.getElementById('field-width');
       const fieldLengthSheet = document.getElementById('field-length-sheet');
+      const fieldArea = document.getElementById('field-area');
       const calculatedBox = document.getElementById('calculated-area-box');
 
       // Проверка существования элементов
@@ -1419,6 +1455,25 @@
           fieldPieces.style.display = 'block';
         }
       }
+
+      // ===== ШПУНТЫ: ПОКАЗАТЬ ПОЛЕ "ПЛОЩАДЬ" =====
+      const shpyntTypes = [
+        'shpynt_dvutavroviy',     // Шпунт двутавровый
+        'shpynt_pvh',              // Шпунт ПВХ
+        'shpynt_trubchatiy',       // Шпунт трубчатый
+        'shpynt_holodnognutiy'     // Шпунт холодногнутый
+      ];
+
+      if (fieldArea) {
+        if (shpyntTypes.includes(metalType)) {
+          console.log('✅ Показываем поле "Площадь" для шпунта:', metalType);
+          fieldArea.style.display = 'block';
+        } else {
+          console.log('❌ Скрываем поле "Площадь" для', metalType);
+          fieldArea.style.display = 'none';
+          areaInput.value = '';  // Очищаем значение
+        }
+      }
     }
 
     // ============================================================================
@@ -1490,6 +1545,18 @@
       }
 
       debounceRecalculate('length');
+      resetPriority();
+    });
+
+    // При изменении площади (только для шпунтов)
+    areaInput.addEventListener('input', (e) => {
+      const value = parseFloat(e.target.value) || 0;
+
+      if (value > 0) {
+        changePriority('area');
+      }
+
+      debounceRecalculate('area');
       resetPriority();
     });
 
@@ -1591,7 +1658,7 @@
       weightInput.value = '';
       lengthInput.value = '';
       piecesInput.value = '';
-      // areaInput удалён
+      if (areaInput) areaInput.value = '';
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
@@ -1605,7 +1672,7 @@
       weightInput.value = '';
       lengthInput.value = '';
       piecesInput.value = '';
-      // areaInput удалён
+      if (areaInput) areaInput.value = '';
       widthInput.value = '';
       lengthSheetInput.value = '';
       document.getElementById('calculated-area-box').style.display = 'none';
