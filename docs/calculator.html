@@ -340,19 +340,29 @@
 
           <!-- Поле: Длина 1 шт. (показывается только для определённых типов) -->
           <div class="form-group flex-1" id="field-length-per-piece" style="display: none;">
-            <label for="input-length-per-piece">
+            <label for="select-length-per-piece">
               📏 Длина 1 шт.
               <span class="field-hint">метры</span>
             </label>
+            <!-- Select для выбора стандартной длины -->
+            <select
+              id="select-length-per-piece"
+              class="form-control"
+            >
+              <!-- Опции заполняются динамически из STANDARD_LENGTHS -->
+            </select>
+            <!-- Input для ручного ввода (показывается только при выборе н/д) -->
             <input
               type="number"
-              id="input-length-per-piece"
-              class="form-control"
-              placeholder="12"
-              value="12"
+              id="input-length-per-piece-custom"
+              class="form-control mt-2"
+              placeholder="Введите длину в метрах"
               step="0.1"
               min="0.1"
+              style="display: none;"
             >
+            <!-- Подсказка -->
+            <div id="length-per-piece-hint" class="field-info mt-1" style="font-size: 11px; color: #666;"></div>
           </div>
 
           <div class="form-group flex-1" id="field-pieces">
@@ -754,6 +764,110 @@
       'woodscrew'     // Шурупы
     ];
 
+    // ✅ СТАНДАРТНЫЕ ДЛИНЫ ДЛЯ КАЖДОГО ТИПА МЕТАЛЛА
+    // value: число = стандартная длина в метрах
+    // value: 'custom' = немерная длина (н/д) - ручной ввод
+    const STANDARD_LENGTHS = {
+      // === АРМАТУРА ===
+      'armature_a1':      { lengths: [6, 11.7], default: 11.7 },
+      'armature_a1_galv': { lengths: [6, 11.7], default: 11.7 },
+      'armature_a3':      { lengths: [6, 11.7], default: 11.7 },
+      'armature_a3_galv': { lengths: [6, 11.7], default: 11.7 },
+      'armature_at800':   { lengths: [11.7, 10, 9.9, 6.7], default: 11.7 },
+      'armature_at1000':  { lengths: [11.7, 10, 9.9, 6.7], default: 11.7 },
+
+      // === БАЛКА ===
+      'beam': { lengths: [12], default: 12 },
+
+      // === КАНАТЫ (только н/д) ===
+      'rope':          { lengths: ['custom'], default: 'custom' },
+      'rope_armature': { lengths: ['custom'], default: 'custom' },
+      'rope_galv':     { lengths: ['custom'], default: 'custom' },
+
+      // === КАТАНКА ===
+      'wire_rod': { lengths: [6, 11.7], default: 6 },
+
+      // === КВАДРАТ ===
+      'square': { lengths: [6, 'custom'], default: 6 },
+
+      // === КРУГ ===
+      'circle':      { lengths: [6, 'custom'], default: 6 },
+      'circle_galv': { lengths: [6, 'custom'], default: 6 },
+
+      // === ПОЛОСА ===
+      'strip':      { lengths: [6, 'custom'], default: 6 },
+      'strip_galv': { lengths: [6, 'custom'], default: 6 },
+      'bulb_flat':  { lengths: [6, 'custom'], default: 6 },
+
+      // === ПРОВОЛОКА (только н/д) ===
+      'wire':      { lengths: ['custom'], default: 'custom' },
+      'wire_galv': { lengths: ['custom'], default: 'custom' },
+
+      // === РЕЛЬС (только н/д) ===
+      'rels': { lengths: ['custom'], default: 'custom' },
+
+      // === СУТУНКА (только н/д) ===
+      'sytynka': { lengths: ['custom'], default: 'custom' },
+
+      // === ТРУБЫ ВГП ===
+      'tryba_vgp':       { lengths: [10, 6, 7.8], default: 10 },
+      'tryba_vgp_ocink': { lengths: [10, 6, 7.8], default: 10 },
+
+      // === ТРУБЫ КВАДРАТНЫЕ ===
+      'tryba_es_kvadr':       { lengths: [6, 12], default: 6 },
+      'tryba_es_kvadr_ocink': { lengths: [6, 12], default: 6 },
+
+      // === ТРУБЫ ПРЯМОУГОЛЬНЫЕ ===
+      'tryba_es_pr':       { lengths: [6, 12], default: 6 },
+      'tryba_es_pr_ocink': { lengths: [6, 12], default: 6 },
+
+      // === ТРУБЫ Э/С ===
+      'tryba_es':       { lengths: [6, 10, 11.7, 12], default: 6 },
+      'tryba_es_ocink': { lengths: [6, 10, 11.7, 12], default: 6 },
+
+      // === ТРУБЫ Б/Ш (только н/д) ===
+      'tryba_gd':           { lengths: ['custom'], default: 'custom' },
+      'tryba_gd_ocink':     { lengths: ['custom'], default: 'custom' },
+      'tryba_bs_kotelnaya': { lengths: ['custom'], default: 'custom' },
+      'tryba_xd':           { lengths: ['custom'], default: 'custom' },
+      'tryba_xd_ocink':     { lengths: ['custom'], default: 'custom' },
+
+      // === ТРУБЫ ОВАЛЬНЫЕ (только н/д) ===
+      'tryba_es_oval':            { lengths: ['custom'], default: 'custom' },
+      'tryba_es_oval_ocink':      { lengths: ['custom'], default: 'custom' },
+      'tryba_es_ploskooval':      { lengths: ['custom'], default: 'custom' },
+      'tryba_es_ploskooval_ocink': { lengths: ['custom'], default: 'custom' },
+
+      // === ТРУБА ПНД (только н/д) ===
+      'tryba_pnd': { lengths: ['custom'], default: 'custom' },
+
+      // === УГОЛОК ===
+      'ygolok':           { lengths: [6, 12], default: 6 },
+      'ygolok_ocink':     { lengths: [6, 12], default: 6 },
+      'ygolok_gnyt':      { lengths: [6, 12], default: 6 },
+      'ygolok_gnyt_ocink': { lengths: [6, 12], default: 6 },
+
+      // === ШВЕЛЛЕР ===
+      'shveller':           { lengths: [6, 12], default: 12 },
+      'shveller_ocink':     { lengths: [6, 12], default: 12 },
+      'shveller_gnyt':      { lengths: [3, 6, 12], default: 6 },
+      'shveller_gnyt_ocink': { lengths: [3, 6, 12], default: 6 },
+
+      // === ШЕСТИГРАННИК ===
+      'shestigrannik': { lengths: [6, 'custom'], default: 6 },
+
+      // === ШПУНТЫ (только н/д) ===
+      'shpynt_dvutavroviy':  { lengths: ['custom'], default: 'custom' },
+      'shpynt_larsen':       { lengths: ['custom'], default: 'custom' },
+      'shpynt_pvh':          { lengths: ['custom'], default: 'custom' },
+      'shpynt_trubchatiy':   { lengths: ['custom'], default: 'custom' },
+      'shpynt_holodnognutiy': { lengths: ['custom'], default: 'custom' },
+
+      // === ПРОФНАСТИЛ (только н/д) ===
+      'profnastil_okrash': { lengths: ['custom'], default: 'custom' },
+      'profnastil_ocink':  { lengths: ['custom'], default: 'custom' }
+    };
+
     let isCalculating = false;  // Флаг чтобы избежать циклических пересчётов
     let debounceTimer = null;   // Таймер для debounce
     let inputPriority = null;   // Приоритет: 'weight', 'length', 'pieces' - какое поле ввели первым
@@ -763,11 +877,104 @@
     // Получить ссылки на поля
     const weightInput = document.getElementById('input-weight');
     const lengthInput = document.getElementById('input-length');
-    const lengthPerPieceInput = document.getElementById('input-length-per-piece');
+    const lengthPerPieceSelect = document.getElementById('select-length-per-piece');  // Select для выбора длины
+    const lengthPerPieceCustomInput = document.getElementById('input-length-per-piece-custom');  // Input для н/д
+    const lengthPerPieceHint = document.getElementById('length-per-piece-hint');  // Подсказка
     const piecesInput = document.getElementById('input-pieces');
     const areaInput = document.getElementById('input-area');  // Поле площади для шпунтов
     const widthInput = document.getElementById('input-width');
     const lengthSheetInput = document.getElementById('input-length-sheet');
+
+    /**
+     * Получить текущее значение "Длина 1 шт." (из select или custom input)
+     * @returns {number|null} Длина в метрах или null если н/д без значения
+     */
+    function getLengthPerPiece() {
+      const selectedValue = lengthPerPieceSelect.value;
+      if (selectedValue === 'custom') {
+        // Немерная длина - взять из custom input
+        const customValue = parseFloat(lengthPerPieceCustomInput.value);
+        return isNaN(customValue) || customValue <= 0 ? null : customValue;
+      } else {
+        // Стандартная длина - взять из select
+        return parseFloat(selectedValue);
+      }
+    }
+
+    /**
+     * Проверить, выбрана ли немерная длина (н/д)
+     * @returns {boolean}
+     */
+    function isCustomLength() {
+      return lengthPerPieceSelect.value === 'custom';
+    }
+
+    /**
+     * Заполнить select стандартными длинами для выбранного типа металла
+     * @param {string} metalType - Тип металла
+     */
+    function updateLengthPerPieceOptions(metalType) {
+      const config = STANDARD_LENGTHS[metalType];
+      if (!config) {
+        // Если нет конфигурации - скрыть поле
+        return;
+      }
+
+      // Очистить select
+      lengthPerPieceSelect.innerHTML = '';
+
+      // Добавить опции
+      config.lengths.forEach(length => {
+        const option = document.createElement('option');
+        if (length === 'custom') {
+          option.value = 'custom';
+          option.textContent = 'н/д (ввести вручную)';
+        } else {
+          option.value = length;
+          option.textContent = `${length}м`;
+        }
+        lengthPerPieceSelect.appendChild(option);
+      });
+
+      // Установить значение по умолчанию
+      lengthPerPieceSelect.value = config.default === 'custom' ? 'custom' : config.default;
+
+      // Обновить видимость custom input и подсказки
+      updateLengthPerPieceUI();
+    }
+
+    /**
+     * Обновить UI поля "Длина 1 шт." (показать/скрыть custom input, обновить подсказку)
+     */
+    function updateLengthPerPieceUI() {
+      const isCustom = isCustomLength();
+
+      // Показать/скрыть custom input
+      lengthPerPieceCustomInput.style.display = isCustom ? 'block' : 'none';
+
+      // Обновить подсказку
+      if (isCustom) {
+        lengthPerPieceHint.innerHTML = 'ℹ️ Расчёт только по метрам, без учёта штук';
+        lengthPerPieceHint.style.color = '#e67e22';
+      } else {
+        lengthPerPieceHint.innerHTML = 'ℹ️ Расчёт кратно штукам (округление вверх)';
+        lengthPerPieceHint.style.color = '#27ae60';
+      }
+
+      // Показать/скрыть поле "Количество штук"
+      const fieldPieces = document.getElementById('field-pieces');
+      const metalType = document.getElementById('select-metal-type').value;
+      const shouldHidePieces = isCustom || metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType);
+
+      if (fieldPieces) {
+        if (shouldHidePieces) {
+          fieldPieces.style.display = 'none';
+          piecesInput.value = '';
+        } else {
+          fieldPieces.style.display = 'block';
+        }
+      }
+    }
 
     /**
      * Автоматический расчёт площади из ширины × длины
@@ -935,15 +1142,18 @@
         }
 
         // ✅ НОВОЕ: Если активно поле "Длина 1 шт." - передать его значение как lengthSheet
-        const lengthPerPieceInput = document.getElementById('input-length-per-piece');
         const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
         const isLengthPerPieceVisible = fieldLengthPerPiece && fieldLengthPerPiece.style.display !== 'none';
 
-        if (isLengthPerPieceVisible && lengthPerPieceInput && lengthPerPieceInput.value) {
-          const lengthPerPiece = parseFloat(lengthPerPieceInput.value);
-          if (lengthPerPiece > 0) {
+        if (isLengthPerPieceVisible) {
+          const lengthPerPiece = getLengthPerPiece();
+          // Передаём lengthSheet только если НЕ выбрана н/д
+          // При н/д расчёт идёт по метрам без округления на штуки
+          if (!isCustomLength() && lengthPerPiece && lengthPerPiece > 0) {
             params.lengthSheet = lengthPerPiece;  // Backend использует это для округления штук
             console.log('  ✅ lengthSheet (из "Длина 1 шт."):', lengthPerPiece, 'м');
+          } else if (isCustomLength()) {
+            console.log('  ⚠️ Выбрана н/д - расчёт без округления на штуки');
           }
         }
 
@@ -1387,7 +1597,7 @@
         const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
         if (fieldLengthPerPiece) {
           fieldLengthPerPiece.style.display = 'none';
-          lengthPerPieceInput.value = '';
+          lengthPerPieceCustomInput.value = '';
         }
 
         return;  // Выходим, больше ничего не показываем
@@ -1443,25 +1653,25 @@
       // ===== ПОКАЗАТЬ/СКРЫТЬ ПОЛЕ "ДЛИНА 1 ШТ." =====
       const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
       if (fieldLengthPerPiece) {
-        if (TYPES_WITH_LENGTH_FIELD.includes(metalType)) {
+        if (TYPES_WITH_LENGTH_FIELD.includes(metalType) && STANDARD_LENGTHS[metalType]) {
           console.log('✅ Показываем поле "Длина 1 шт." для', metalType);
           fieldLengthPerPiece.style.display = 'block';
-          // Устанавливаем значение по умолчанию 12 м, если поле пустое
-          if (!lengthPerPieceInput.value || lengthPerPieceInput.value === '0') {
-            lengthPerPieceInput.value = '12';
-          }
+          // Заполнить select стандартными длинами
+          updateLengthPerPieceOptions(metalType);
         } else {
           console.log('❌ Скрываем поле "Длина 1 шт." для', metalType);
           fieldLengthPerPiece.style.display = 'none';
-          lengthPerPieceInput.value = '';  // Очищаем значение
+          lengthPerPieceCustomInput.value = '';  // Очищаем значение
         }
       }
 
       // ===== ПОКАЗАТЬ/СКРЫТЬ ПОЛЕ "КОЛИЧЕСТВО ШТУК" =====
-      // Скрываем для: Плиты, Канатов, Проволоки, Профнастила, Сутунки, Шпунтов
+      // Скрываем для: Плиты, Канатов, Проволоки, Профнастила, Сутунки, Шпунтов, и при н/д
+      // Примечание: updateLengthPerPieceUI() также управляет этим полем при изменении select
       const fieldPieces = document.getElementById('field-pieces');
       if (fieldPieces) {
-        const hidePieces = metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType);
+        const isCustomDefault = STANDARD_LENGTHS[metalType]?.default === 'custom';
+        const hidePieces = metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType) || isCustomDefault;
         if (hidePieces) {
           console.log('❌ Скрываем поле "Количество штук" для', metalType);
           fieldPieces.style.display = 'none';
@@ -1598,16 +1808,27 @@
       resetPriority();
     });
 
-    // При изменении длины 1 шт. → рассчитать общую длину автоматически
-    // ⚠️ НЕ меняем приоритет при изменении длины 1 шт!
-    lengthPerPieceInput.addEventListener('input', (e) => {
+    // При изменении select "Длина 1 шт." → обновить UI и пересчитать
+    lengthPerPieceSelect.addEventListener('change', (e) => {
+      updateLengthPerPieceUI();
       calculateTotalLengthFromPieces();
+    });
+
+    // При изменении custom input "Длина 1 шт." (для н/д) → пересчитать
+    lengthPerPieceCustomInput.addEventListener('input', (e) => {
+      // При н/д не рассчитываем штуки - просто пересчитываем вес из метров
+      debounceRecalculate('length');
     });
 
     // Функция расчёта общей длины из "Длина 1 шт." × "Количество"
     // Возвращает true если вызвала пересчёт, false если нет
     function calculateTotalLengthFromPieces() {
-      const lengthPerPiece = parseFloat(lengthPerPieceInput.value);
+      // При н/д не используем эту логику
+      if (isCustomLength()) {
+        return false;
+      }
+
+      const lengthPerPiece = getLengthPerPiece();
       const pieces = parseInt(piecesInput.value);
 
       // Проверяем что поле "Длина 1 шт." видимо (для данного типа металла)
@@ -2083,15 +2304,12 @@
         let piecesText = `<strong>${result.actual.pieces} шт</strong>`;
 
         // ✅ Используем значение из поля "Длина 1 шт." если оно доступно
-        const lengthPerPieceInput = document.getElementById('input-length-per-piece');
         const fieldLengthPerPiece = document.getElementById('field-length-per-piece');
         const isFieldVisible = fieldLengthPerPiece && fieldLengthPerPiece.style.display !== 'none';
-        const lengthPerPiece = lengthPerPieceInput && lengthPerPieceInput.value
-          ? parseFloat(lengthPerPieceInput.value)
-          : null;
+        const lengthPerPiece = isFieldVisible ? getLengthPerPiece() : null;
 
         if (isFieldVisible && lengthPerPiece && lengthPerPiece > 0) {
-          // Используем введённое пользователем значение
+          // Используем выбранное пользователем значение из select или custom input
           piecesText += ` × ${lengthPerPiece}м`;
         } else if (result.standardLength) {
           // Используем стандартное значение из базы
