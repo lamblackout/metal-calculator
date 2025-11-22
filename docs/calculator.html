@@ -708,22 +708,37 @@
       // Полоса (3)
       'strip', 'strip_galv', 'bulb_flat',
       // Рельс (1)
-      'rail',
-      // Трубы (18)
-      'pipe_vgp', 'pipe_vgp_galv', 'pipe_pnd',
-      'pipe_seamless_hot', 'pipe_seamless_hot_galv', 'pipe_boiler',
-      'pipe_seamless_cold', 'pipe_seamless_cold_galv',
-      'pipe_square', 'pipe_square_galv',
-      'pipe_oval', 'pipe_oval_galv',
-      'pipe_flatoval', 'pipe_flatoval_galv',
-      'pipe_rect', 'pipe_rect_galv',
-      'pipe_es', 'pipe_es_galv',
+      'rels',
+      // Трубы (19) - с правильными ключами из metals.json
+      'tryba_vgp', 'tryba_vgp_ocink', 'tryba_pnd',
+      'tryba_gd', 'tryba_gd_ocink', 'tryba_bs_kotelnaya',
+      'tryba_xd', 'tryba_xd_ocink',
+      'tryba_es_kvadr', 'tryba_es_kvadr_ocink',
+      'tryba_es_oval', 'tryba_es_oval_ocink',
+      'tryba_es_ploskooval', 'tryba_es_ploskooval_ocink',
+      'tryba_es_pr', 'tryba_es_pr_ocink',
+      'tryba_es', 'tryba_es_ocink',
       // Уголок (4)
-      'angle', 'angle_bent', 'angle_bent_galv', 'angle_galv',
+      'ygolok', 'ygolok_gnyt', 'ygolok_gnyt_ocink', 'ygolok_ocink',
       // Швеллер (4)
-      'channel', 'channel_bent', 'channel_bent_galv', 'channel_galv',
+      'shveller', 'shveller_gnyt', 'shveller_gnyt_ocink', 'shveller_ocink',
       // Шестигранник (1)
-      'hexagon'
+      'shestigrannik'
+    ];
+
+    // ✅ ТИПЫ БЕЗ ПОЛЯ "КОЛИЧЕСТВО ШТУК" (13 типов) - показывают только Вес, Длина
+    const TYPES_WITHOUT_PIECES = [
+      // Канаты (3)
+      'rope', 'rope_armature', 'rope_galv',
+      // Проволока (2)
+      'wire', 'wire_galv',
+      // Профнастил (2)
+      'profnastil_okrash', 'profnastil_ocink',
+      // Сутунка (1)
+      'sytynka',
+      // Шпунты (5)
+      'shpynt_dvutavroviy', 'shpynt_larsen', 'shpynt_pvh',
+      'shpynt_trubchatiy', 'shpynt_holodnognutiy'
     ];
 
     // ✅ КРЕПЕЖИ (9 типов) - только "Вес" и "Количество штук", БЕЗ поля "Длина"
@@ -1443,10 +1458,11 @@
       }
 
       // ===== ПОКАЗАТЬ/СКРЫТЬ ПОЛЕ "КОЛИЧЕСТВО ШТУК" =====
-      // Для Плиты поле "Количество штук" не нужно (площадь не делится на штуки)
+      // Скрываем для: Плиты, Канатов, Проволоки, Профнастила, Сутунки, Шпунтов
       const fieldPieces = document.getElementById('field-pieces');
       if (fieldPieces) {
-        if (metalType === 'plate') {
+        const hidePieces = metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType);
+        if (hidePieces) {
           console.log('❌ Скрываем поле "Количество штук" для', metalType);
           fieldPieces.style.display = 'none';
           piecesInput.value = '';  // Очищаем значение
