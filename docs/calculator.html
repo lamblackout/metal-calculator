@@ -1984,6 +1984,9 @@
 
     // При изменении марки стали (катанка) - пересчитать
     document.getElementById('steel-type')?.addEventListener('change', () => {
+      // Устанавливаем флаг - это изменение марки стали, НЕ обновлять source поле!
+      isRecalculatingFromMaterialChange = true;
+      
       // Пересчитать от того поля которое заполнено
       if (weightInput.value) {
         recalculateFields('weight');
@@ -1992,6 +1995,9 @@
       } else if (piecesInput.value) {
         recalculateFields('pieces');
       }
+      
+      // Сбрасываем флаг после пересчёта
+      setTimeout(() => { isRecalculatingFromMaterialChange = false; }, 100);
     });
 
     // При изменении марки стали для Квадрата - пересчитать
