@@ -922,8 +922,8 @@
       lengthPerPieceCustomInput.style.display = isCustom ? 'block' : 'none';
       // Обновить подсказку
       if (isCustom) {
-        lengthPerPieceHint.innerHTML = 'Расчёт только по метрам, без учёта штук';
-        lengthPerPieceHint.style.color = '#e67e22';  // Оранжевый
+        lengthPerPieceHint.innerHTML = 'Введите длину 1 шт. для расчёта';
+        lengthPerPieceHint.style.color = '#3498db';  // Синий
       } else {
         lengthPerPieceHint.innerHTML = 'Расчёт кратно штукам (округление вверх)';
         lengthPerPieceHint.style.color = '#27ae60';  // Зелёный
@@ -932,8 +932,9 @@
       const fieldPieces = document.getElementById('field-pieces');
       const metalType = document.getElementById('metal-type').value;
       
-      // Скрываем штуки для: н/д ИЛИ Плиты ИЛИ типов из TYPES_WITHOUT_PIECES
-      const shouldHidePieces = isCustom || metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType);
+      // Скрываем штуки для: Плиты ИЛИ типов из TYPES_WITHOUT_PIECES
+      // НО не для н/д - штуки считаются по введённой длине!
+      const shouldHidePieces = metalType === 'plate' || TYPES_WITHOUT_PIECES.includes(metalType);
       
       if (fieldPieces) {
         if (shouldHidePieces) {
