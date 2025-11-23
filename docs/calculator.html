@@ -1781,9 +1781,12 @@
       // Если есть значение в поле штук - пересчитать общую длину
       if (piecesInput.value && parseInt(piecesInput.value) > 0) {
         calculateTotalLengthFromPieces();
-      } else {
-        // Иначе - триггерим полный пересчёт с новым значением lengthSheet
-        tryAutoCalculate();
+      } else if (weightInput.value && parseFloat(weightInput.value) > 0) {
+        // Есть вес - пересчитать от веса
+        debounceRecalculate('weight');
+      } else if (lengthInput.value && parseFloat(lengthInput.value) > 0) {
+        // Есть длина - пересчитать от длины
+        debounceRecalculate('length');
       }
     });
 
@@ -1792,10 +1795,12 @@
       // Если есть значение в поле штук - пересчитать общую длину
       if (piecesInput.value && parseInt(piecesInput.value) > 0) {
         calculateTotalLengthFromPieces();
-      } else {
-        // Иначе - триггерим полный пересчёт чтобы обновить результат
-        // с новым значением lengthSheet
-        tryAutoCalculate();
+      } else if (weightInput.value && parseFloat(weightInput.value) > 0) {
+        // Есть вес - пересчитать от веса
+        debounceRecalculate('weight');
+      } else if (lengthInput.value && parseFloat(lengthInput.value) > 0) {
+        // Есть длина - пересчитать от длины
+        debounceRecalculate('length');
       }
     });
 
