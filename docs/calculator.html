@@ -1778,12 +1778,25 @@
     // При выборе из select
     lengthPerPieceSelect.addEventListener('change', (e) => {
       updateLengthPerPieceUI();
-      calculateTotalLengthFromPieces();
+      // Если есть значение в поле штук - пересчитать общую длину
+      if (piecesInput.value && parseInt(piecesInput.value) > 0) {
+        calculateTotalLengthFromPieces();
+      } else {
+        // Иначе - триггерим полный пересчёт с новым значением lengthSheet
+        tryAutoCalculate();
+      }
     });
 
     // При ручном вводе (когда выбрано н/д)
     lengthPerPieceCustomInput.addEventListener('input', (e) => {
-      calculateTotalLengthFromPieces();
+      // Если есть значение в поле штук - пересчитать общую длину
+      if (piecesInput.value && parseInt(piecesInput.value) > 0) {
+        calculateTotalLengthFromPieces();
+      } else {
+        // Иначе - триггерим полный пересчёт чтобы обновить результат
+        // с новым значением lengthSheet
+        tryAutoCalculate();
+      }
     });
 
     // Функция расчёта общей длины из "Длина 1 шт." × "Количество"
