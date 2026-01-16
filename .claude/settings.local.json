@@ -26,7 +26,15 @@
       "Bash(git rm:*)",
       "Bash(test:*)",
       "Bash(git reset:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(claude mcp add:*)",
+      "Bash(claude mcp list:*)",
+      "Bash(code:*)",
+      "Bash(start \"\" \"c:\\Users\\Skylake\\metal-calculator\\web-calculator\\index.html\")",
+      "Bash(start \"\" \"c:\\\\Users\\\\Skylake\\\\metal-calculator\\\\docs\\\\calculator.html\")",
+      "Bash(git clone:*)",
+      "Bash(wc:*)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

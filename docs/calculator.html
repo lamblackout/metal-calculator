@@ -1183,16 +1183,6 @@
         // ВЫЗВАТЬ КАЛЬКУЛЯТОР
         const result = calculateMetal(params, metalDatabase);
 
-        // ✅ ОТЛАДКА
-        console.log('=== ОТЛАДКА recalculateFields ===');
-        console.log('sourceField:', sourceField);
-        console.log('result.success:', result.success);
-        console.log('result.actual:', result.actual);
-        console.log('result.actual.pieces:', result.actual ? result.actual.pieces : 'undefined');
-        console.log('result.standardLength:', result.standardLength);
-        console.log('Условие pieces:', sourceField !== 'pieces', '&&', result.actual && result.actual.pieces !== null);
-        console.log('================================');
-
         if (result.success) {
           // ⚠️ УСТАНАВЛИВАЕМ ФЛАГ: программное обновление полей (не от пользователя)
           isUpdating = true;
@@ -1251,13 +1241,6 @@
             // Это предотвращает бесконечный рост штук из-за округления вверх
             if (sourceField !== 'pieces' && result.actual.pieces !== null && !isRecalculatingFromMaterialChange) {
               piecesInput.value = result.actual.pieces;
-              console.log('✅ Pieces заполнен:', piecesInput.value);
-            } else {
-              if (isRecalculatingFromMaterialChange) {
-                console.log('⚠️ Pieces НЕ обновлены! Изменение марки стали/оцинковки - штуки остаются неизменными');
-              } else {
-                console.log('❌ Pieces НЕ заполнен! sourceField:', sourceField, 'pieces:', result.actual ? result.actual.pieces : 'undefined');
-              }
             }
           } finally {
             // ⚠️ СНИМАЕМ ФЛАГ: программное обновление завершено

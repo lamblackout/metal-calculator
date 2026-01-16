@@ -4,6 +4,31 @@
 const formulas = require('./formulas');
 
 /**
+ * ✅ Получить коэффициент плотности стали с нормализацией и fallback
+ * @param {Object} steelCoefs - Объект с коэффициентами плотности
+ * @param {string} steelType - Марка стали (например "Ст3", "ст3", "09Г2С")
+ * @returns {number} Коэффициент плотности (по умолчанию 7.85)
+ */
+function getSteelDensity(steelCoefs, steelType) {
+  if (!steelCoefs || !steelType) return 7.85;
+
+  // Пробуем в оригинальном регистре
+  if (steelCoefs[steelType]) return steelCoefs[steelType];
+
+  // Пробуем в нижнем регистре
+  const lower = String(steelType).toLowerCase();
+  if (steelCoefs[lower]) return steelCoefs[lower];
+
+  // Пробуем убрать пробелы и привести к стандартному виду
+  const normalized = lower.replace(/\s+/g, '');
+  if (steelCoefs[normalized]) return steelCoefs[normalized];
+
+  // Fallback: базовая плотность стали ст3
+  console.warn(`⚠️ Марка стали '${steelType}' не найдена, используем плотность 7.85`);
+  return 7.85;
+}
+
+/**
  * Главная функция расчета металла
  * @param {Object} params - Параметры расчета
  * @param {Object} metalDatabase - База данных металлов
@@ -83,7 +108,7 @@ function calculateMetal(params, metalDatabase) {
       const sizeCoef = metal.coefficients ? metal.coefficients[String(params.size)] : null;
       // Поддержка обоих вариантов названий полей
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelCoef = steelCoefs ? steelCoefs[steelType] : null;
+      const steelCoef = getSteelDensity(steelCoefs, steelType);
 
       if (!sizeCoef) {
         return {
@@ -95,6 +120,7 @@ function calculateMetal(params, metalDatabase) {
       }
 
       if (!steelCoef) {
+        // Этот блок теперь не нужен т.к. getSteelDensity всегда возвращает значение
         return {
           success: false,
           error: `Марка стали '${steelType}' не найдена в базе данных`,
@@ -211,7 +237,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
       const baseDensity = 7.85; // Базовая плотность (ст3)
 
       if (!coefficient) {
@@ -248,7 +274,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -284,7 +310,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -848,7 +874,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -883,7 +909,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -920,7 +946,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -956,7 +982,7 @@ function calculateMetal(params, metalDatabase) {
 
       // Поддержка обоих вариантов названий полей для плотности стали
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelDensity = steelCoefs?.[steelType];
+      const steelDensity = getSteelDensity(steelCoefs, steelType);
 
       if (!coefficient) {
         return {
@@ -1281,7 +1307,7 @@ function calculateMetal(params, metalDatabase) {
       const sizeCoef = metal.weights[String(params.size)];
       // Поддержка обоих вариантов названий полей
       const steelCoefs = metal.steelDensities || metal.steelCoefficients;
-      const steelCoef = steelCoefs[steelType];
+      const steelCoef = getSteelDensity(steelCoefs, steelType);
 
       if (!sizeCoef) {
         return {
@@ -1289,16 +1315,6 @@ function calculateMetal(params, metalDatabase) {
           error: `Размер '${params.size}' не найден для металла '${metal.name}'`,
           metalType: params.metalType,
           size: params.size
-        };
-      }
-
-      if (!steelCoef) {
-        return {
-          success: false,
-          error: `Марка стали '${steelType}' не найдена в базе данных для '${metal.name}'`,
-          metalType: params.metalType,
-          size: params.size,
-          steelType: steelType
         };
       }
 
@@ -1715,42 +1731,31 @@ function calculateWeightPerMeter(metal, size) {
     }
   }
 
-  // ✅ ЛИСТЫ И ПОЛОСЫ: Размер - это массив [ширина, толщина]
+  // ✅ ЛИСТЫ И ПОЛОСЫ: Размер может быть массивом [ширина, толщина] или числом (толщина)
   if (formula === 'sheet' || formula === 'strip') {
-    // Размер должен быть массивом
-    if (!Array.isArray(size)) {
-      return null;
+    // Если размер - массив [ширина_мм, толщина_мм]
+    if (Array.isArray(size) && size.length === 2) {
+      const width = parseFloat(size[0]);
+      const thickness = parseFloat(size[1]);
+
+      if (!isNaN(width) && !isNaN(thickness)) {
+        switch (formula) {
+          case 'sheet':
+            // Лист: [ширина_мм, толщина_мм]
+            // calculateSheetWeight ожидает (ширина_м, длина_м, толщина_мм)
+            // Для веса 1м² передаём длину = 1
+            return formulas.calculateSheetWeight(width / 1000, 1, thickness);
+
+          case 'strip':
+            // Полоса: [ширина_мм, толщина_мм]
+            // calculateStripWeight ожидает (ширина_мм, толщина_мм, длина_м)
+            // Для веса 1м передаём длину = 1
+            return formulas.calculateStripWeight(width, thickness, 1);
+        }
+      }
     }
-
-    // Должно быть ровно 2 элемента: [ширина, толщина]
-    if (size.length !== 2) {
-      return null;
-    }
-
-    const width = parseFloat(size[0]);
-    const thickness = parseFloat(size[1]);
-
-    if (isNaN(width) || isNaN(thickness)) {
-      return null;
-    }
-
-    // Обработать разные типы листов и полос
-    switch (formula) {
-      case 'sheet':
-        // Лист: [ширина_мм, толщина_мм]
-        // calculateSheetWeight ожидает (ширина_м, длина_м, толщина_мм)
-        // Для веса 1м передаём длину = 1
-        return formulas.calculateSheetWeight(width / 1000, 1, thickness);
-
-      case 'strip':
-        // Полоса: [ширина_мм, толщина_мм]
-        // calculateStripWeight ожидает (ширина_мм, толщина_мм, длина_м)
-        // Для веса 1м передаём длину = 1
-        return formulas.calculateStripWeight(width, thickness, 1);
-
-      default:
-        return null;
-    }
+    // ✅ Если размер - число (только толщина), продолжаем к switch ниже
+    // Там case 'sheet' вернёт вес 1м² (1м × 1м × толщина)
   }
 
   // Проверить, что размер является числом для формульных расчетов
