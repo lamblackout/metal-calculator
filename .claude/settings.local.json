@@ -34,7 +34,8 @@
       "Bash(start \"\" \"c:\\\\Users\\\\Skylake\\\\metal-calculator\\\\docs\\\\calculator.html\")",
       "Bash(git clone:*)",
       "Bash(wc:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
